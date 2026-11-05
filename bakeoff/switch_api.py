@@ -35,7 +35,7 @@ class Switch:
         """Create the contest room from the Bakeoff template; returns the room id."""
         text = yaml_text if yaml_text is not None else TEMPLATE.read_text()
         out = self._post(f"/agents/{self.agent_id}/ops/create_room_from_yaml",
-                         {"yaml": text, "inputs": inputs, "template_name": "bakeoff"})
+                         {"yaml": text, "inputs": inputs})
         room = _find_room_id(out)
         if not room:
             raise SwitchError(f"create_room_from_yaml returned no room id: {str(out)[:300]}")

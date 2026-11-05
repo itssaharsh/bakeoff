@@ -182,9 +182,15 @@
         "observe: bakeoff-checker replies in a Switch room on the EC2 server"
       ],
       "rollback": "stop the compose stack; instance can be stopped",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "kind": "deploy"
+      "kind": "deploy",
+      "base": "73e78f1",
+      "started_after": 18,
+      "evidence": [
+        "E0019",
+        "E0020"
+      ]
     },
     {
       "id": "T06",
@@ -208,12 +214,14 @@
         "observe: a contest room opens, both agents record readings, approval card, merge and decline notes land on GitHub"
       ],
       "rollback": "git revert the T06 commit",
-      "status": "todo",
+      "status": "doing",
       "notes": "",
       "size": "L",
       "risk": [
         "external-side-effect"
-      ]
+      ],
+      "base": "73e78f1",
+      "started_after": 20
     },
     {
       "id": "T07",
