@@ -14,3 +14,5 @@ worktree. Their work became four real pull requests:
 
 All four pass CI. They differ on the checklist and the scope, which is what the room has to read for.
 `scripts/race.sh` rebuilds the race on a fork.
+
+Code decides the facts, two readers decide the checklist, a maintainer decides the winner.
