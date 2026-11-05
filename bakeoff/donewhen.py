@@ -10,9 +10,11 @@ from __future__ import annotations
 import re
 
 _HEADING = re.compile(
-    r"^\s*(?:#{1,6}\s*|\*\*|__)?\s*(done when|acceptance(?: criteria)?|definition of done)\b[^\n]*$",
+    r"^\s*(?:#{1,6}\s*)?(?:\*\*|__)?\s*(done when|acceptance criteria|acceptance|definition of done)"
+    r"\s*:?\s*(?:\*\*|__)?\s*:?\s*$",
     re.IGNORECASE,
 )
+_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 _ITEM = re.compile(r"^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(?P<text>\S.*)$")
 _TASK = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s+(?P<text>\S.*)$")
 _ANY_HEADING = re.compile(r"^\s*(#{1,6}\s|\*\*[^*]+\*\*\s*:?\s*$)")
@@ -23,19 +25,17 @@ def parse_done_when(body: str | None) -> list[str]:
     """Return the checklist items, in order; nested items join their parent with '; '."""
     if not body:
         return []
-    lines = body.replace("\r\n", "\n").split("\n")
+    lines = _COMMENT.sub("", body).replace("\r\n", "\n").split("\n")
     start = next((i for i, line in enumerate(lines) if _HEADING.match(line)), None)
     if start is None:
         return [m.group("text").strip() for line in lines if (m := _TASK.match(line))]
 
     items: list[str] = []
     base_indent: int | None = None
-    seen_item = False
+    blank_since_item = False
     for line in lines[start + 1:]:
         if not line.strip():
-            if seen_item:
-                # a blank line ends the list unless the next non-blank line is still an item
-                continue
+            blank_since_item = bool(items)
             continue
         m = _ITEM.match(line)
         if m:
@@ -47,9 +47,12 @@ def parse_done_when(body: str | None) -> list[str]:
                 items[-1] = f"{items[-1]}; {text}"
             else:
                 items.append(text)
-            seen_item = True
+            blank_since_item = False
             continue
-        if seen_item or _ANY_HEADING.match(line):
+        if items and not blank_since_item and line[:1].isspace():
+            items[-1] = f"{items[-1]} {line.strip()}"  # a wrapped line continues the item
+            continue
+        if items or _ANY_HEADING.match(line):
             break
     return items
 

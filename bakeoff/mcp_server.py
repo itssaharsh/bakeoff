@@ -7,7 +7,6 @@ not judge. The agent's own name comes from BAKEOFF_AGENT, never from a tool argu
 
 from __future__ import annotations
 
-import json
 import os
 
 from mcp.server.mcpserver import MCPServer
@@ -94,14 +93,27 @@ def record_readings(repo: str, issue: int, pr: int, readings: list[dict]) -> str
     """Record your verdict on each Done-when item for one PR.
     readings: [{"item": 1, "verdict": "met" | "unmet" | "unclear", "evidence": "file.py:41 returns None on an empty body"}]
     Items are numbered from 1 as done_when lists them. Cite file:line from the diff as evidence."""
-    store, agent, n = Store(), _agent(), 0
+    c = collect_contest(GitHub(repo), issue)
+    head = next((p.head_sha for p in c.prs if p.number == pr), None)
+    if head is None:
+        return f"Nothing recorded: #{pr} is not an open PR closing #{issue} (" + \
+            ", ".join(f"#{p.number}" for p in c.prs) + ")."
+    rows = []
     for r in readings:
         verdict = str(r.get("verdict", "")).lower().strip()
+        try:
+            item = int(r.get("item"))
+        except (TypeError, ValueError):
+            return f"Nothing recorded: every reading needs an item number from 1 to {len(c.items)}."
         if verdict not in VERDICTS:
-            return f"Nothing recorded after {n} items: verdict must be one of {VERDICTS}, got {verdict!r}."
-        store.add_reading(repo, issue, agent, pr, int(r["item"]) - 1, verdict, str(r.get("evidence", "")))
-        n += 1
-    return f"Recorded {n} verdicts from {agent} for #{pr} on #{issue}."
+            return f"Nothing recorded: verdict must be one of {VERDICTS}, got {verdict!r}."
+        if not 1 <= item <= max(len(c.items), 1):
+            return f"Nothing recorded: item {item} is out of range (the checklist has {len(c.items)} items)."
+        rows.append((item - 1, verdict, str(r.get("evidence", ""))))
+    store, agent = Store(), _agent()
+    for item, verdict, evidence in rows:
+        store.add_reading(repo, issue, agent, pr, item, verdict, evidence, sha=head)
+    return f"Recorded {len(rows)} verdicts from {agent} for #{pr} on #{issue} (commit {head[:7]})."
 
 
 if MERGE:

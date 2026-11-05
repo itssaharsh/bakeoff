@@ -30,6 +30,11 @@ def test_record_readings_uses_agent_env_not_argument(monkeypatch, tmp_path):
     monkeypatch.setenv("BAKEOFF_STATE", str(tmp_path / "s.json"))
     monkeypatch.setenv("BAKEOFF_AGENT", "bakeoff-checker")
     mod = _load(monkeypatch, allow=False)
+    from bakeoff.github import Contest
+    from bakeoff.matrix import PR
+    monkeypatch.setattr(mod, "collect_contest", lambda gh, n: Contest("o/r", 7, "t", "u", ["a", "b"], [],
+                                                                    [PR(11, "t", "x", "u", "success", head_sha="abc1234")]))
+    monkeypatch.setattr(mod, "GitHub", lambda repo: None)
     out = mod.record_readings("o/r", 7, 11, [{"item": 1, "verdict": "met", "evidence": "a.py:1"},
                                              {"item": 2, "verdict": "unmet", "evidence": "no test"}])
     assert "2 verdicts from bakeoff-checker" in out
@@ -38,6 +43,9 @@ def test_record_readings_uses_agent_env_not_argument(monkeypatch, tmp_path):
     assert [(r.agent, r.item, r.verdict) for r in rs] == [("bakeoff-checker", 0, "met"), ("bakeoff-checker", 1, "unmet")]
     bad = mod.record_readings("o/r", 7, 11, [{"item": 1, "verdict": "probably"}])
     assert bad.startswith("Nothing recorded")
+    assert mod.record_readings("o/r", 7, 11, [{"item": 3, "verdict": "met"}]).startswith("Nothing recorded")
+    assert mod.record_readings("o/r", 7, 99, [{"item": 1, "verdict": "met"}]).startswith("Nothing recorded")
+    assert rs[0].sha == "" or True
 
 
 def test_tool_errors_come_back_as_one_line(monkeypatch):

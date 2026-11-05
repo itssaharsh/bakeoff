@@ -11,17 +11,21 @@ export PATH=$HOME/.local/bin:/snap/bin:$PATH
 if [ -d "$HOME/bakeoff/.git" ]; then git -C "$HOME/bakeoff" pull -q --ff-only; else git clone -q https://github.com/itssaharsh/bakeoff "$HOME/bakeoff"; fi
 (cd "$HOME/bakeoff" && uv sync -q --group screens && uv run playwright install --with-deps chromium >/dev/null 2>&1 || uv run playwright install chromium >/dev/null)
 
+GH_TOKEN_VALUE=$($SSM "${GITHUB_TOKEN_PARAM:-/switch-demo/github-token}")
+INTAKE_KEY_VALUE=$($SSM "${INTAKE_KEY_PARAM:-/switch-demo/bakeoff-intake-api-key}")
+[ -n "$GH_TOKEN_VALUE" ] && [ -n "$INTAKE_KEY_VALUE" ] || { echo "missing GitHub token or intake key in SSM" >&2; exit 1; }
 umask 077
 cat > "$HOME/bakeoff.env" <<ENV
-GITHUB_TOKEN=$($SSM /switch-demo/github-token)
+GITHUB_TOKEN=$GH_TOKEN_VALUE
 BAKEOFF_STATE=$HOME/.bakeoff/state.json
 BAKEOFF_READERS=bakeoff-checker,bakeoff-second
 SWITCH_API_URL=http://127.0.0.1:8000
 BAKEOFF_INTAKE_AGENT_ID=${INTAKE_AGENT_ID:?set INTAKE_AGENT_ID}
-BAKEOFF_INTAKE_API_KEY=$($SSM /switch-demo/bakeoff-intake-api-key)
+BAKEOFF_INTAKE_API_KEY=$INTAKE_KEY_VALUE
 BAKEOFF_MAINTAINER=${BAKEOFF_MAINTAINER:?set BAKEOFF_MAINTAINER}
 BAKEOFF_REPOS=${BAKEOFF_REPOS:-itssaharsh/bakeoff}
 ENV
+chmod 600 "$HOME/bakeoff.env"
 umask 022
 mkdir -p "$HOME/.bakeoff"
 MCP="$HOME/bakeoff/deploy/bakeoff-mcp.sh"
@@ -37,16 +41,18 @@ J
 }
 claude_agent bakeoff-checker 0 \
   '["mcp__bakeoff__done_when","mcp__bakeoff__contest_matrix","mcp__bakeoff__pr_diff","mcp__bakeoff__record_readings"]' \
-  '["Bash","Edit","Write","WebFetch","WebSearch"]'
+  '["Bash","Edit","Write","Read","Glob","Grep","LS","NotebookEdit","WebFetch","WebSearch","Task"]'
 # The merge agent's MCP server exposes merge_pick only, and it is deliberately NOT allowed here,
 # so every pick stops at a Switch approval card for a person.
-claude_agent bakeoff-merge 1 '[]' '["Bash","Edit","Write","WebFetch","WebSearch","Read","Glob","Grep"]'
+claude_agent bakeoff-merge 1 '[]' '["Bash","Edit","Write","Read","Glob","Grep","LS","NotebookEdit","WebFetch","WebSearch","Task"]'
 
 d="$AGENTS_DIR/bakeoff-second"; mkdir -p "$d"
 cat > "$d/opencode.json" <<J
 {"\$schema": "https://opencode.ai/config.json",
  "mcp": {"bakeoff": {"type": "local", "command": ["$MCP"], "enabled": true, "environment": {"BAKEOFF_AGENT": "bakeoff-second", "BAKEOFF_ALLOW_MERGE": "0"}}},
- "permission": {"bash": "deny", "edit": "deny", "webfetch": "deny"}}
+ "permission": {"bash": "deny", "edit": "deny", "webfetch": "deny"},
+ "tools": {"bash": false, "edit": false, "write": false, "read": false, "grep": false, "glob": false, "list": false,
+           "patch": false, "webfetch": false, "todowrite": false, "todoread": false}}
 J
 
 mkdir -p "$HOME/.config/systemd/user"

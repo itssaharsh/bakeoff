@@ -39,7 +39,15 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--interval", type=int, default=30)
     w.add_argument("--once", action="store_true")
     w.add_argument("--only", type=int, nargs="*", help="watch only these issue numbers")
+    f = sub.add_parser("forget", help="drop a contest from Bakeoff's state (after archiving its room)")
+    f.add_argument("repo")
+    f.add_argument("issue", type=int)
     args = ap.parse_args(argv)
+    if args.cmd == "forget":
+        from .state import Store
+        Store().forget(args.repo, args.issue)
+        print(f"forgot {args.repo}#{args.issue}")
+        return 0
     if args.cmd == "matrix":
         return _matrix(args)
     if args.cmd == "mcp":

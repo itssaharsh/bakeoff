@@ -13,7 +13,7 @@ class FakeGH:
         self.merged, self.comments, self.closed = [], [], []
         self.fail_comment_on = fail_comment_on
 
-    def merge(self, n, title, message):
+    def merge(self, n, title, message, sha=None):
         self.merged.append(n)
         return {"merged": True, "sha": "abc"}
 

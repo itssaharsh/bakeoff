@@ -338,9 +338,11 @@
         "observe: fresh review report saved in .prod-build/reports"
       ],
       "rollback": "git revert the T11 commit",
-      "status": "todo",
-      "notes": "",
-      "kind": "review"
+      "status": "doing",
+      "notes": "[2026-11-05 start] review findings fixed now, before the Slack run; T06's last check waits on the builder",
+      "kind": "review",
+      "base": "9db6c6d",
+      "started_after": 21
     },
     {
       "id": "T12",

@@ -36,7 +36,10 @@ class Store:
             yield data
             if write:
                 tmp = self.path.with_suffix(f".tmp{os.getpid()}{time.time_ns()}")
-                tmp.write_text(json.dumps(data, indent=1, sort_keys=True))
+                with open(tmp, "w") as out:
+                    out.write(json.dumps(data, indent=1, sort_keys=True))
+                    out.flush()
+                    os.fsync(out.fileno())
                 os.replace(tmp, self.path)
 
     @staticmethod
@@ -47,9 +50,13 @@ class Store:
         with self._locked(False) as d:
             return d["contests"].get(self._key(repo, issue))
 
-    def contests(self) -> dict:
+    def all_contests(self) -> dict:
         with self._locked(False) as d:
             return dict(d["contests"])
+
+    def forget(self, repo: str, issue: int) -> None:
+        with self._locked(True) as d:
+            d["contests"].pop(self._key(repo, issue), None)
 
     def open_contest(self, repo: str, issue: int, room_id: str, prs: list[int]) -> None:
         with self._locked(True) as d:
@@ -61,17 +68,19 @@ class Store:
         with self._locked(True) as d:
             d["contests"][self._key(repo, issue)]["prs"] = sorted(prs)
 
-    def add_reading(self, repo: str, issue: int, agent: str, pr: int, item: int, verdict: str, evidence: str) -> None:
+    def add_reading(self, repo: str, issue: int, agent: str, pr: int, item: int, verdict: str, evidence: str,
+                    sha: str = "") -> None:
         if verdict not in VERDICTS:
             raise ValueError(f"verdict must be one of {', '.join(VERDICTS)}, not {verdict!r}")
         with self._locked(True) as d:
             c = d["contests"].setdefault(self._key(repo, issue), {"repo": repo, "issue": issue, "readings": []})
             c.setdefault("readings", []).append({"agent": agent, "pr": int(pr), "item": int(item),
-                                                 "verdict": verdict, "evidence": evidence[:400], "at": _now()})
+                                                 "verdict": verdict, "evidence": evidence[:400], "sha": sha,
+                                                 "at": _now()})
 
     def readings(self, repo: str, issue: int) -> list[Reading]:
         c = self.contest(repo, issue) or {}
-        return [Reading(r["agent"], r["pr"], r["item"], r["verdict"], r.get("evidence", ""))
+        return [Reading(r["agent"], r["pr"], r["item"], r["verdict"], r.get("evidence", ""), r.get("sha", ""))
                 for r in c.get("readings", [])]
 
     def decide(self, repo: str, issue: int, winner: int, decided_by: str) -> bool:
@@ -91,4 +100,5 @@ class Store:
 
     def note(self, repo: str, issue: int, **fields) -> None:
         with self._locked(True) as d:
-            d["contests"].setdefault(self._key(repo, issue), {"readings": []}).update(fields)
+            c = d["contests"].setdefault(self._key(repo, issue), {"readings": []})
+            c.update({"repo": repo, "issue": issue, **fields})

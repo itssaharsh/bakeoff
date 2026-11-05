@@ -14,13 +14,29 @@ from .donewhen import parse_done_when, parse_scope
 from .matrix import PR, Matrix, Reading, build_matrix
 
 API = "https://api.github.com"
-_CLOSES = r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+(?:[\w.-]+/[\w.-]+)?#{n}\b"
+_KEYWORD = r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+"
+_REF = re.compile(_KEYWORD + r"(?:https://github\.com/(?P<urepo>[\w.-]+/[\w.-]+)/issues/|(?P<repo>[\w.-]+/[\w.-]+)?#)(?P<n>\d+)\b",
+                  re.IGNORECASE)
+_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 _AGENT_TITLE = re.compile(r"^\s*\[([^\]]+)\]")
 _AGENT_BODY = re.compile(r"^\s*(?:written by|agent)\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 
 
-def closes_issue(body: str | None, issue: int) -> bool:
-    return bool(body) and re.search(_CLOSES.format(n=issue), body, re.IGNORECASE) is not None
+def closed_issues(body: str | None, repo: str | None = None) -> set[int]:
+    """Issue numbers in this repo that a PR body says it closes (comments ignored; other repos ignored)."""
+    out: set[int] = set()
+    for m in _REF.finditer(_COMMENT.sub("", body or "")):
+        other = m.group("urepo") or m.group("repo")
+        if other and repo and other.lower() != repo.lower():
+            continue
+        if m.group("urepo") and not repo:
+            continue
+        out.add(int(m.group("n")))
+    return out
+
+
+def closes_issue(body: str | None, issue: int, repo: str | None = None) -> bool:
+    return issue in closed_issues(body, repo)
 
 
 def agent_of(title: str, body: str | None) -> str:
@@ -32,25 +48,33 @@ def agent_of(title: str, body: str | None) -> str:
 
 
 def ci_conclusion(check_runs: list[dict], statuses: list[dict]) -> tuple[str, list[str]]:
-    """success | failure | pending | none, plus the names of failing checks."""
-    failing, pending, seen = [], False, False
+    """success | failure | pending | none, plus the names of failing checks.
+    The newest run of each check name counts; a PR whose checks were all skipped has no result."""
+    newest: dict[str, dict] = {}
     for r in check_runs:
-        seen = True
+        name = r.get("name", "check")
+        if name not in newest or r.get("id", 0) >= newest[name].get("id", 0):
+            newest[name] = r
+    failing, pending, passed = [], False, False
+    for name, r in newest.items():
         if r.get("status") != "completed":
             pending = True
         elif r.get("conclusion") in ("failure", "cancelled", "timed_out", "action_required", "startup_failure"):
-            failing.append(r.get("name", "check"))
+            failing.append(name)
+        elif r.get("conclusion") == "success":
+            passed = True
     for s in statuses:
-        seen = True
         if s.get("state") in ("failure", "error"):
             failing.append(s.get("context", "status"))
         elif s.get("state") == "pending":
             pending = True
+        elif s.get("state") == "success":
+            passed = True
     if failing:
         return "failure", failing
     if pending:
         return "pending", []
-    return ("success", []) if seen else ("none", [])
+    return ("success", []) if passed else ("none", [])
 
 
 def default_token() -> str:
@@ -121,9 +145,12 @@ class GitHub:
         return base64.b64decode(data["content"]).decode("utf-8", "replace")
 
     # writes (used only by merge_pick)
-    def merge(self, n: int, title: str, message: str) -> dict:
-        r = self.http.put(f"/repos/{self.repo}/pulls/{n}/merge",
-                          json={"merge_method": "squash", "commit_title": title, "commit_message": message})
+    def merge(self, n: int, title: str, message: str, sha: str | None = None) -> dict:
+        """Squash-merge; with sha, GitHub refuses (409) if the PR's head moved since it was read."""
+        body = {"merge_method": "squash", "commit_title": title, "commit_message": message}
+        if sha:
+            body["sha"] = sha
+        r = self.http.put(f"/repos/{self.repo}/pulls/{n}/merge", json=body)
         r.raise_for_status()
         return r.json()
 
@@ -153,7 +180,7 @@ class Contest:
 
 
 def linked_open_pulls(gh: GitHub, issue: int) -> list[dict]:
-    return [p for p in gh.open_pulls() if not p.get("draft") and closes_issue(p.get("body"), issue)]
+    return [p for p in gh.open_pulls() if not p.get("draft") and closes_issue(p.get("body"), issue, gh.repo)]
 
 
 def collect_contest(gh: GitHub, issue: int) -> Contest:
@@ -174,12 +201,10 @@ def collect_contest(gh: GitHub, issue: int) -> Contest:
 
 def contested_issues(gh: GitHub, minimum: int = 2) -> dict[int, list[int]]:
     """Open issues that two or more open PRs say they close: {issue: [pr numbers]}."""
-    found: dict[int, list[int]] = {}
+    found: dict[int, set[int]] = {}
     for p in gh.open_pulls():
         if p.get("draft"):
             continue
-        body = p.get("body") or ""
-        for m in re.finditer(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+(?:[\w.-]+/[\w.-]+)?#(\d+)\b",
-                             body, re.IGNORECASE):
-            found.setdefault(int(m.group(1)), []).append(p["number"])
-    return {i: sorted(set(ps)) for i, ps in found.items() if len(set(ps)) >= minimum}
+        for n in closed_issues(p.get("body"), gh.repo):
+            found.setdefault(n, set()).add(p["number"])
+    return {i: sorted(ps) for i, ps in found.items() if len(ps) >= minimum}

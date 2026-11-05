@@ -93,3 +93,25 @@ def test_pictures_only_for_web_page_contests(monkeypatch):
     posted.clear()
     watch.post_pictures(GH(), SW(), "!r", make([PR(11, "t", "u", "url", "success")]))
     assert posted == []
+
+
+def test_crash_between_create_and_record_never_makes_a_second_room(tmp_path, monkeypatch):
+    monkeypatch.setattr(watch, "contested_issues", lambda gh: {7: [11, 12]})
+    monkeypatch.setattr(watch, "collect_contest", lambda gh, n: make([PR(11, "a", "u", "u", "success", head_sha="a"),
+                                                                     PR(12, "b", "u", "u", "success", head_sha="b")]))
+    store = Store(tmp_path / "s.json")
+    store.note("o/r", 7, creating_at="2026-11-05T16:00:00Z")      # the last run died mid-create
+    sw = FakeSwitch()
+    assert watch.tick(FakeGH(), sw, store, "m") == [] and sw.rooms == []
+
+
+def test_one_bad_contest_does_not_block_the_next(tmp_path, monkeypatch):
+    monkeypatch.setattr(watch, "contested_issues", lambda gh: {1: [2, 3], 7: [6, 8]})
+
+    def collect(gh, n):
+        if n == 1:
+            raise RuntimeError("poison")
+        return make([PR(6, "a", "u", "u", "success", head_sha="a"), PR(8, "b", "u", "u", "success", head_sha="b")])
+    monkeypatch.setattr(watch, "collect_contest", collect)
+    sw = FakeSwitch()
+    assert watch.tick(FakeGH(), sw, Store(tmp_path / "s.json"), "m") == ["opened room !room1 for #7"]

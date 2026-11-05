@@ -14,10 +14,11 @@ from dataclasses import dataclass, field
 VERDICTS = ("met", "unmet", "unclear")
 
 _CLAIM = re.compile(
-    r"(?:all\s+)?tests?\s+(?:are\s+|now\s+)?(?:pass(?:es|ing)?|green)\b|\bci\s+(?:is\s+)?green\b|tests?\s+passing",
+    r"tests?\s+(?:are\s+|now\s+|all\s+)?(?:pass(?:es|ed|ing)?|green)\b|\bci\s+(?:is\s+)?green\b",
     re.IGNORECASE,
 )
-_NEGATION = re.compile(r"\b(?:not|n't|never|fail\w*|no)\b", re.IGNORECASE)
+_NEGATION = re.compile(r"(?:\bnot\b|n't\b|\bnever\b)\s*\w*\s*$", re.IGNORECASE)
+_UNCHECKED = re.compile(r"^\s*[-*+]\s+\[ \]")
 
 
 @dataclass
@@ -42,6 +43,7 @@ class Reading:
     item: int
     verdict: str
     evidence: str = ""
+    sha: str = ""  # the PR head the reader read; a newer commit makes the reading stale
 
 
 @dataclass
@@ -103,15 +105,15 @@ class Matrix:
 
 
 def claims_tests_pass(body: str | None) -> bool:
-    """True when the PR body says its tests pass (and doesn't negate it nearby)."""
+    """True when the PR body says its tests pass. An unchecked checklist box is not a claim."""
     if not body:
         return False
-    for m in _CLAIM.finditer(body):
-        before = body[max(0, m.start() - 25): m.start()]
-        inside = m.group(0)
-        if _NEGATION.search(before.split(".")[-1]) or re.search(r"\bnot\b|n't", inside, re.IGNORECASE):
+    for line in body.splitlines():
+        if _UNCHECKED.match(line):
             continue
-        return True
+        for m in _CLAIM.finditer(line):
+            if not _NEGATION.search(line[max(0, m.start() - 14): m.start()]):
+                return True
     return False
 
 
@@ -140,8 +142,15 @@ def _cell(readings: dict[str, Reading], agents: list[str]) -> Cell:
 def build_matrix(issue: int, items: list[str], prs: list[PR], readings: list[Reading],
                  scope: list[str], agents: list[str] | None = None) -> Matrix:
     agents = list(agents) if agents else sorted({r.agent for r in readings})
+    heads = {p.number: p.head_sha for p in prs}
     latest: dict[tuple[int, int, str], Reading] = {}
+    stale: set[int] = set()
     for r in readings:  # later readings replace earlier ones from the same agent
+        if r.agent not in agents:
+            continue
+        if r.sha and heads.get(r.pr) and r.sha != heads[r.pr]:
+            stale.add(r.pr)
+            continue
         latest[(r.pr, r.item, r.agent)] = r
     columns = []
     for p in sorted(prs, key=lambda p: p.number):
@@ -150,6 +159,8 @@ def build_matrix(issue: int, items: list[str], prs: list[PR], readings: list[Rea
             flags.append("claims pass, CI failed")
         if p.mergeable is False:
             flags.append("merge conflict")
+        if p.number in stale:
+            flags.append("newer commit since a reading: re-read needed")
         cells = []
         for i in range(len(items)):
             rs = {a: r for (pn, it, a), r in latest.items() if pn == p.number and it == i}

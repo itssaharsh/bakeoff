@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 EnvironmentFile=%h/bakeoff.env
-ExecStart=%h/.local/bin/uv run --quiet --project %h/bakeoff bakeoff watch ${BAKEOFF_REPOS}
+ExecStart=%h/.local/bin/uv run --quiet --project %h/bakeoff bakeoff watch $BAKEOFF_REPOS
 Restart=always
 RestartSec=10
 

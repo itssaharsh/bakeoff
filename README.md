@@ -15,7 +15,7 @@ Bakeoff turns that into one sitting in one chat room: a matrix GitHub fills, two
 ## What happens
 
 1. **Code opens the room.** The Bakeoff watcher sees two or more open PRs that say `Closes #N` and creates the room `bakeoff-N` from [`templates/bakeoff.room.yaml`](templates/bakeoff.room.yaml) through Switch's agent bridge. It posts the contest matrix: one column per PR, with CI, tests touched and files outside the issue's scope, all from GitHub.
-2. **Two readers read.** `bakeoff-checker` (Claude Code) and `bakeoff-second` (OpenCode) each read every diff against the issue's Done-when list and record a verdict per item, with `file:line` evidence, through the Bakeoff MCP tools. Code, not the agents, marks where they agree, split or are still waiting.
+2. **Two readers read.** `bakeoff-checker` (Claude Code) and `bakeoff-second` (OpenCode, here running Claude Haiku; any OpenCode model works) each read every diff against the issue's Done-when list and record a verdict per item, with `file:line` evidence, through the Bakeoff MCP tools. Code, not the agents, marks where they agree, split or are still waiting.
 3. **People talk.** Maintainers and contributors ask and answer in the room. A reader can re-read and record a new verdict.
 4. **A maintainer picks.** `@bakeoff-merge pick #P`. The merge agent calls `merge_pick`; Switch shows an approval card in the room; a maintainer allows it once.
 5. **It lands on GitHub.** PR #P is merged with a comment naming who picked it. Every other PR gets a thank-you note listing what it missed, and is closed. The contest is decided once: a second pick is refused, with the name and time of the first.
@@ -31,16 +31,19 @@ Bakeoff turns that into one sitting in one chat room: a matrix GitHub fills, two
 | Approval cards | `merge_pick` is the one tool the merge agent may not run without a person: Switch posts "Allow once / Decline" in the room and records who answered | the agent merges on its own reading of the chat |
 | Slack bridge | the room is a Slack channel; agents post under their own names | another tool to open |
 
-Separation of duties is enforced in code as well: only the merge agent's MCP server has `merge_pick` (`BAKEOFF_ALLOW_MERGE=1`), the readers' servers do not, and each agent's name comes from its own environment, never from a tool argument.
+Separation of duties is enforced in code as well: the merge agent's MCP server exposes `merge_pick` and nothing else (`BAKEOFF_ALLOW_MERGE=1`), the readers' servers don't have it, and each agent's name comes from its own environment, never from a tool argument. The readers get no shell, file or web tools at all: a PR diff is untrusted text, and the only things they can do with it are read it and record verdicts.
+
+What the pick records: the name on the GitHub comment is the maintainer the merge agent says asked. The approval card shows that name before anything runs, and only people the merge agent's addressing policy admits can see their instructions delivered or answer its cards.
 
 ## What happens when it's wrong
 
-- **A PR says its tests pass and CI failed:** the cell stays red with "claims pass, CI failed", and `merge_pick` refuses a PR whose CI has not passed. Nobody in the room can overrule GitHub.
+- **A PR says its tests pass and CI failed:** the cell stays red with "claims pass, CI failed", and `merge_pick` refuses a PR whose CI has not passed. Chat cannot overrule GitHub's checks.
+- **Someone pushes after the readers read:** their readings are marked stale, and the merge is pinned to the commit that was read, so GitHub refuses it if the PR moved.
 - **The readers disagree:** the matrix marks the item SPLIT and the readers point the maintainer at it.
 - **Someone picks a decided contest:** refused, naming who decided and when; nothing is posted.
 - **Someone who isn't a maintainer tells the merge agent to merge:** Switch's addressing policy doesn't deliver it.
 - **GitHub refuses the merge:** the pick is undone and the contest stays open.
-- **A decline note fails to post:** the tool says which one; the pick stays recorded.
+- **The pick is interrupted** (a crash, a failed note): the same pick run again resumes it and posts only what is missing; any other pick is still refused.
 
 ## The demo contest
 
@@ -48,7 +51,7 @@ Issue [#1](https://github.com/itssaharsh/bakeoff/issues/1) got four real pull re
 
 ## Run it yourself
 
-You need a Switch server with the agent controller (headless works: `just standalone-up` in the [Switch repo](https://github.com/sandbox-quantum/switch)), a messaging app connected to it (Slack, or the bundled Mattermost), `uv`, and a GitHub token with Contents, Pull requests and Issues read/write on the repository you watch.
+You need a Switch server with the agent controller (headless works: `just standalone-up` in the [Switch repo](https://github.com/sandbox-quantum/switch)), a messaging app connected to it (Slack, or the bundled Mattermost), `uv`, and a fine-grained GitHub token with Contents, Pull requests and Issues read/write on the repository you watch. `deploy/box-setup.sh` reads the GitHub token and the intake bot's key from AWS SSM Parameter Store (`/switch-demo/github-token`, `/switch-demo/bakeoff-intake-api-key`; override the names with `GITHUB_TOKEN_PARAM` and `INTAKE_KEY_PARAM`), because that is where this deployment keeps secrets; on another host, write `~/bakeoff.env` yourself with the same keys and skip that part.
 
 1. Create three agents on your Switch server: `bakeoff-checker` (Claude Code, auto mode), `bakeoff-second` (OpenCode) and `bakeoff-merge` (Claude Code, approvals required), and register a bot agent `bakeoff-intake` with `POST /agents/register-known`.
 2. On the machine that runs the agent controller: `git clone https://github.com/itssaharsh/bakeoff ~/bakeoff`, then run [`deploy/box-setup.sh`](deploy/box-setup.sh) with `INTAKE_AGENT_ID`, `BAKEOFF_MAINTAINER` (your username on the messaging app) and `BAKEOFF_REPOS`. It writes `~/bakeoff.env` and each agent's MCP and permission settings.

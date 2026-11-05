@@ -21,7 +21,7 @@ def test_ci_conclusion_rules():
     assert ci_conclusion([{"name": "t", "status": "completed", "conclusion": "success"},
                           {"name": "lint", "status": "completed", "conclusion": "failure"}], []) == ("failure", ["lint"])
     assert ci_conclusion([], [{"context": "ci/x", "state": "failure"}]) == ("failure", ["ci/x"])
-    assert ci_conclusion([{"name": "s", "status": "completed", "conclusion": "skipped"}], []) == ("success", [])
+    assert ci_conclusion([{"name": "s", "status": "completed", "conclusion": "skipped"}], []) == ("none", [])
 
 
 def test_agent_of():
