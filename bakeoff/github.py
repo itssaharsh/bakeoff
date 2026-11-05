@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 import subprocess
 from dataclasses import dataclass, field
 
@@ -73,7 +74,11 @@ class GitHub:
         self.http = httpx.Client(base_url=API, headers=headers, timeout=30, transport=transport)
 
     def _get(self, path: str, **params):
-        r = self.http.get(path, params=params or None)
+        for attempt in range(3):  # GitHub answers 5xx now and then; reads are safe to retry
+            r = self.http.get(path, params=params or None)
+            if r.status_code < 500:
+                break
+            time.sleep(1.5 * (attempt + 1))
         r.raise_for_status()
         return r.json()
 
