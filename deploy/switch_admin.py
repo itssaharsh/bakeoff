@@ -124,6 +124,11 @@ def cmd_users(c, a):
         print("unconfirmed", r.status_code, r.text[:2500])
 
 
+def cmd_archive(c, a):
+    for room in a.rooms:
+        print(room, c.post(f"/rooms/{room}/archive").status_code)
+
+
 def cmd_approvals(c, a):
     print(json.dumps(c.get("/agent-sessions/approvals").json(), indent=1)[:4000])
 
@@ -146,6 +151,7 @@ def main():
     sub.add_parser("approvals")
     p = sub.add_parser("slack"); p.add_argument("--name", default="Slack"); p.add_argument("--workspace", default="")
     p = sub.add_parser("users"); p.add_argument("--bridge", default="")
+    p = sub.add_parser("archive"); p.add_argument("rooms", nargs="+")
     p = sub.add_parser("answer")
     for k in ("agent", "session", "request", "option"):
         p.add_argument(k)

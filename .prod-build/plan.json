@@ -214,14 +214,18 @@
         "observe: a contest room opens, both agents record readings, approval card, merge and decline notes land on GitHub"
       ],
       "rollback": "git revert the T06 commit",
-      "status": "doing",
+      "status": "done",
       "notes": "",
       "size": "L",
       "risk": [
         "external-side-effect"
       ],
       "base": "73e78f1",
-      "started_after": 20
+      "started_after": 20,
+      "evidence": [
+        "E0026",
+        "E0027"
+      ]
     },
     {
       "id": "T07",
