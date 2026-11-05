@@ -4,6 +4,8 @@ When several pull requests fix one issue, Bakeoff opens a Switch room for that i
 
 > Code decides the facts, two readers decide the checklist, a maintainer decides the winner.
 
+![How a Bakeoff contest runs: GitHub PRs, the watcher and matrix, the Switch room with two readers, people, the merge agent and its approval card](docs/architecture.svg)
+
 Built during the [Flip the Switch hackathon](https://www.wemakedevs.org/hackathons/switch) (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026). Planning notes and the build plan were written first, inside the window.
 
 ## The problem

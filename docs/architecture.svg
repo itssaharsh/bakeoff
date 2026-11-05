@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <title>How Bakeoff runs a contest in a Switch room</title>
+  <rect width="960" height="520" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- GitHub column -->
+  <rect x="24" y="40" width="200" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="124" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">GitHub</text>
+  <rect x="44" y="90" width="160" height="56" rx="8" fill="#fff" stroke="#94a3b8"/>
+  <text x="124" y="114" text-anchor="middle" font-size="13" fill="#0f172a">Issue #N</text>
+  <text x="124" y="132" text-anchor="middle" font-size="11" fill="#475569">"Done when" checklist</text>
+  <rect x="44" y="162" width="160" height="70" rx="8" fill="#fff" stroke="#94a3b8"/>
+  <text x="124" y="186" text-anchor="middle" font-size="13" fill="#0f172a">PR #a  PR #b  PR #c</text>
+  <text x="124" y="204" text-anchor="middle" font-size="11" fill="#475569">each says "Closes #N"</text>
+  <text x="124" y="220" text-anchor="middle" font-size="11" fill="#475569">CI runs on each</text>
+  <rect x="44" y="370" width="160" height="90" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="124" y="394" text-anchor="middle" font-size="13" font-weight="600" fill="#065f46">One merge</text>
+  <text x="124" y="412" text-anchor="middle" font-size="11" fill="#065f46">"Picked in Bakeoff by …"</text>
+  <text x="124" y="432" text-anchor="middle" font-size="13" font-weight="600" fill="#065f46">Every other PR</text>
+  <text x="124" y="450" text-anchor="middle" font-size="11" fill="#065f46">a note: the item it missed</text>
+
+  <!-- Code column -->
+  <rect x="262" y="40" width="200" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="362" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">Code decides facts</text>
+  <rect x="282" y="90" width="160" height="70" rx="8" fill="#fff" stroke="#94a3b8"/>
+  <text x="362" y="114" text-anchor="middle" font-size="13" fill="#0f172a">bakeoff watch</text>
+  <text x="362" y="132" text-anchor="middle" font-size="11" fill="#475569">sees 2+ PRs for one issue</text>
+  <text x="362" y="148" text-anchor="middle" font-size="11" fill="#475569">bot agent: bakeoff-intake</text>
+  <rect x="282" y="186" width="160" height="70" rx="8" fill="#fff" stroke="#94a3b8"/>
+  <text x="362" y="210" text-anchor="middle" font-size="13" fill="#0f172a">contest matrix</text>
+  <text x="362" y="228" text-anchor="middle" font-size="11" fill="#475569">CI, scope, tests, splits</text>
+  <text x="362" y="244" text-anchor="middle" font-size="11" fill="#475569">from GitHub, not a model</text>
+  <rect x="282" y="282" width="160" height="86" rx="8" fill="#fff" stroke="#94a3b8"/>
+  <text x="362" y="306" text-anchor="middle" font-size="13" fill="#0f172a">bakeoff MCP tools</text>
+  <text x="362" y="324" text-anchor="middle" font-size="11" fill="#475569">readers: done_when, pr_diff,</text>
+  <text x="362" y="340" text-anchor="middle" font-size="11" fill="#475569">contest_matrix, record_readings</text>
+  <text x="362" y="356" text-anchor="middle" font-size="11" fill="#475569">merger: merge_pick only</text>
+  <rect x="282" y="390" width="160" height="70" rx="8" fill="#fff7ed" stroke="#f97316"/>
+  <text x="362" y="412" text-anchor="middle" font-size="13" fill="#9a3412">merge_pick</text>
+  <text x="362" y="430" text-anchor="middle" font-size="11" fill="#9a3412">refuses red CI, a moved PR,</text>
+  <text x="362" y="446" text-anchor="middle" font-size="11" fill="#9a3412">a decided contest</text>
+
+  <!-- Switch room -->
+  <rect x="500" y="40" width="436" height="440" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="718" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#312e81">Switch room = Slack channel #bakeoff-N</text>
+  <text x="718" y="90" text-anchor="middle" font-size="10.5" fill="#4338ca">from templates/bakeoff.room.yaml: instructions, roles, contest document</text>
+  <rect x="520" y="108" width="190" height="78" rx="8" fill="#fff" stroke="#818cf8"/>
+  <text x="615" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1b4b">bakeoff-checker</text>
+  <text x="615" y="150" text-anchor="middle" font-size="11" fill="#475569">Claude Code · role checker</text>
+  <text x="615" y="168" text-anchor="middle" font-size="11" fill="#475569">no file, shell or web tools</text>
+  <rect x="726" y="108" width="190" height="78" rx="8" fill="#fff" stroke="#818cf8"/>
+  <text x="821" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1b4b">bakeoff-second</text>
+  <text x="821" y="150" text-anchor="middle" font-size="11" fill="#475569">OpenCode · role second-opinion</text>
+  <text x="821" y="168" text-anchor="middle" font-size="11" fill="#475569">reads independently</text>
+  <rect x="520" y="206" width="396" height="74" rx="8" fill="#fff" stroke="#818cf8"/>
+  <text x="718" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1b4b">People: maintainers and contributors</text>
+  <text x="718" y="248" text-anchor="middle" font-size="11" fill="#475569">ask, answer, weigh in · readers answer anyone</text>
+  <text x="718" y="266" text-anchor="middle" font-size="11" fill="#475569">"@bakeoff-merge pick #b"</text>
+  <rect x="520" y="300" width="190" height="88" rx="8" fill="#fff" stroke="#818cf8"/>
+  <text x="615" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1b4b">bakeoff-merge</text>
+  <text x="615" y="342" text-anchor="middle" font-size="11" fill="#475569">Claude Code · role merger</text>
+  <text x="615" y="360" text-anchor="middle" font-size="11" fill="#475569">addressing policy:</text>
+  <text x="615" y="376" text-anchor="middle" font-size="11" fill="#475569">maintainers only</text>
+  <rect x="726" y="300" width="190" height="88" rx="8" fill="#fefce8" stroke="#eab308"/>
+  <text x="821" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#713f12">Approval card</text>
+  <text x="821" y="342" text-anchor="middle" font-size="11" fill="#713f12">"bakeoff wants to run</text>
+  <text x="821" y="358" text-anchor="middle" font-size="11" fill="#713f12">merge_pick" · Allow once</text>
+  <text x="821" y="376" text-anchor="middle" font-size="11" fill="#713f12">Switch records who answered</text>
+  <text x="718" y="456" text-anchor="middle" font-size="11.5" fill="#312e81">Code decides the facts, two readers decide the checklist,</text>
+  <text x="718" y="472" text-anchor="middle" font-size="11.5" fill="#312e81">a maintainer decides the winner.</text>
+
+  <!-- arrows -->
+  <line x1="204" y1="197" x2="280" y2="125" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="442" y1="125" x2="518" y2="125" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="480" y="117" text-anchor="middle" font-size="10" fill="#475569">opens</text>
+  <line x1="362" y1="160" x2="362" y2="184" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="518" y1="160" x2="444" y2="310" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="474" y="268" text-anchor="middle" font-size="10" fill="#475569">tools</text>
+  <line x1="615" y1="280" x2="615" y2="298" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="710" y1="344" x2="724" y2="344" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M821 388 C821 425 560 428 444 425" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="640" y="414" text-anchor="middle" font-size="10" fill="#475569">allowed once: merge_pick runs</text>
+  <line x1="282" y1="425" x2="206" y2="415" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+</svg>
