@@ -9,7 +9,7 @@ SSM="aws ssm get-parameter --region ${AWS_REGION:-us-east-1} --with-decryption -
 export PATH=$HOME/.local/bin:/snap/bin:$PATH
 
 if [ -d "$HOME/bakeoff/.git" ]; then git -C "$HOME/bakeoff" pull -q --ff-only; else git clone -q https://github.com/itssaharsh/bakeoff "$HOME/bakeoff"; fi
-(cd "$HOME/bakeoff" && uv sync -q)
+(cd "$HOME/bakeoff" && uv sync -q --group screens && uv run playwright install --with-deps chromium >/dev/null 2>&1 || uv run playwright install chromium >/dev/null)
 
 umask 077
 cat > "$HOME/bakeoff.env" <<ENV

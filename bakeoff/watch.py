@@ -37,6 +37,24 @@ def readers() -> list[str]:
     return [a.strip() for a in raw.split(",") if a.strip()]
 
 
+def post_pictures(gh, switch, room: str, c: Contest) -> None:
+    """For a web-page contest, post each candidate as it renders (light and dark)."""
+    from .screenshot import html_scope, render
+
+    path = html_scope(c.scope)
+    if not path:
+        return
+    for p in c.prs:
+        try:
+            html = gh.file_at(path, p.head_sha)
+            shots = [(f"pr{p.number}-light.png", render(html), "image/png"),
+                     (f"pr{p.number}-dark.png", render(html, dark=True), "image/png")]
+            who = f" ({p.agent})" if p.agent else ""
+            switch.post_files(room, shots, caption=f"#{p.number}{who}: {path} as it renders, light and dark")
+        except Exception as e:  # pictures help; they never block the contest
+            log.warning("picture for #%s failed: %s", p.number, e)
+
+
 def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str, only: set[int] | None = None) -> list[str]:
     """One pass over one repository. Returns what it did, for the log."""
     did: list[str] = []
@@ -64,6 +82,7 @@ def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str, only: set[in
                                           "Facts from GitHub below; readings fill in as the readers record them.\n"
                                           + render_text(m))
             store.note(gh.repo, issue, fingerprint=fp)
+            post_pictures(gh, switch, state["room_id"], c)
             if not did or not did[-1].startswith("opened"):
                 did.append(f"posted the opening matrix for #{issue}")
         elif state.get("fingerprint") != fp:

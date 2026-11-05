@@ -41,6 +41,13 @@ class Switch:
             raise SwitchError(f"create_room_from_yaml returned no room id: {str(out)[:300]}")
         return room
 
+    def post_files(self, room_id: str, files: list[tuple[str, bytes, str]], caption: str = "") -> dict:
+        r = self.http.post(f"/agents/{self.agent_id}/rooms/{room_id}/media",
+                           files=[("files", f) for f in files], data={"caption": caption} if caption else None)
+        if r.status_code >= 400:
+            raise SwitchError(f"media upload -> {r.status_code}: {r.text[:300]}")
+        return r.json() if r.content else {}
+
     def post(self, room_id: str, content: str) -> str:
         out = self._post(f"/agents/{self.agent_id}/message", {"room_id": room_id, "content": content})
         return str(out.get("event_id", ""))

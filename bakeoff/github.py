@@ -115,6 +115,11 @@ class GitHub:
         text = r.text
         return text if len(text) <= limit else text[:limit] + f"\n… diff truncated at {limit} characters"
 
+    def file_at(self, path: str, ref: str) -> str:
+        import base64
+        data = self._get(f"/repos/{self.repo}/contents/{path}", ref=ref)
+        return base64.b64decode(data["content"]).decode("utf-8", "replace")
+
     # writes (used only by merge_pick)
     def merge(self, n: int, title: str, message: str) -> dict:
         r = self.http.put(f"/repos/{self.repo}/pulls/{n}/merge",

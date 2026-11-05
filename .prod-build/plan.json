@@ -316,9 +316,11 @@
         "observe: picked homepage live on GitHub Pages after approval"
       ],
       "rollback": "git revert the T10 commit",
-      "status": "todo",
-      "notes": "",
-      "size": "M"
+      "status": "doing",
+      "notes": "[2026-11-05 start] T06's last check (a human approving the merge card) waits on the builder's Slack setup; T10's build work does not depend on it",
+      "size": "M",
+      "base": "1aba23f",
+      "started_after": 21
     },
     {
       "id": "T11",

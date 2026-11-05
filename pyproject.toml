@@ -16,6 +16,7 @@ bakeoff = "bakeoff.cli:main"
 
 [dependency-groups]
 dev = ["pytest>=8"]
+screens = ["playwright>=1.48"]
 
 [build-system]
 requires = ["hatchling"]

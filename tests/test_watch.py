@@ -71,3 +71,25 @@ def test_only_filter(tmp_path, monkeypatch):
     monkeypatch.setattr(watch, "collect_contest", lambda gh, n: seen.append(n) or make([]))
     watch.tick(FakeGH(), FakeSwitch(), Store(tmp_path / "s.json"), "m", only={7})
     assert seen == [7]
+
+
+def test_pictures_only_for_web_page_contests(monkeypatch):
+    import bakeoff.screenshot as shot
+    posted = []
+
+    class SW(FakeSwitch):
+        def post_files(self, room, files, caption=""):
+            posted.append((room, [f[0] for f in files], caption))
+
+    class GH(FakeGH):
+        def file_at(self, path, ref):
+            return "<h1>x</h1>"
+
+    monkeypatch.setattr(shot, "render", lambda html, **k: b"png")
+    c = Contest("o/r", 9, "Design", "u", ["a"], ["site/index.html"],
+                [PR(10, "[claude] page", "u", "url", "success", head_sha="s", agent="claude")])
+    watch.post_pictures(GH(), SW(), "!r", c)
+    assert posted == [("!r", ["pr10-light.png", "pr10-dark.png"], "#10 (claude): site/index.html as it renders, light and dark")]
+    posted.clear()
+    watch.post_pictures(GH(), SW(), "!r", make([PR(11, "t", "u", "url", "success")]))
+    assert posted == []
