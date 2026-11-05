@@ -57,11 +57,15 @@ def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str, only: set[in
                 "candidates": candidates_text(c), "maintainer": maintainer,
             })
             store.open_contest(gh.repo, issue, room_id=room, prs=[p.number for p in c.prs])
-            switch.post(room, f"Contest opened by code: {len(c.prs)} open PRs close {gh.repo}#{issue}. "
-                              "Facts from GitHub below; readings fill in as the readers record them.\n"
-                              + render_text(m))
-            store.note(gh.repo, issue, fingerprint=fp)
+            state = store.contest(gh.repo, issue) or {}
             did.append(f"opened room {room} for #{issue}")
+        if not state.get("fingerprint"):
+            switch.post(state["room_id"], f"Contest opened by code: {len(c.prs)} open PRs close {gh.repo}#{issue}. "
+                                          "Facts from GitHub below; readings fill in as the readers record them.\n"
+                                          + render_text(m))
+            store.note(gh.repo, issue, fingerprint=fp)
+            if not did or not did[-1].startswith("opened"):
+                did.append(f"posted the opening matrix for #{issue}")
         elif state.get("fingerprint") != fp:
             new = sorted(set(p.number for p in c.prs) - set(state.get("prs", [])))
             store.set_prs(gh.repo, issue, [p.number for p in c.prs])

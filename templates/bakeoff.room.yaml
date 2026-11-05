@@ -38,11 +38,15 @@ params:
     type: agent
     description: The agent that executes the maintainer's pick
     default: bakeoff-merge
+  intake:
+    type: agent
+    description: The bot that opened the room and posts GitHub's facts
+    default: bakeoff-intake
 room:
   name: "bakeoff-{issue}"
   description: "Bake-off for {repo}#{issue}: {issue_title}"
   channel_type: channel_public
-  agents: ["{reader}", "{second_reader}", "{merger}"]
+  agents: ["{reader}", "{second_reader}", "{merger}", "{intake}"]
   users: ["{maintainer}"]
   roles:
     - name: checker
