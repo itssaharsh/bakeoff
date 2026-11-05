@@ -5,6 +5,7 @@
   python deploy/switch_admin.py read ROOM_ID [--last 20]
   python deploy/switch_admin.py say ROOM_ID "@bakeoff-merge pick #2" --mention bakeoff-merge
   python deploy/switch_admin.py approvals
+  SLACK_BOT_TOKEN=xoxb-... SLACK_APP_TOKEN=xapp-... python deploy/switch_admin.py slack
   python deploy/switch_admin.py answer AGENT_ID SESSION_ID REQUEST_ID OPTION_ID
 
 Credentials: GATEWAY_ADMIN_EMAIL / GATEWAY_ADMIN_PASSWORD (read from ~/switch-server/.env when unset).
@@ -97,6 +98,24 @@ def cmd_join(c, a):
     print(c.post(f"/chats/{a.room}/members", json={"userId": uid}).status_code)
 
 
+def cmd_slack(c, a):
+    """Connect a Slack workspace (Socket Mode) as the default messaging app. Tokens come from the environment."""
+    bot, app = os.environ["SLACK_BOT_TOKEN"], os.environ["SLACK_APP_TOKEN"]
+    r = c.post("/collaborations/setup/slack/check", json={"bot_token": bot, "app_token": app})
+    print("check", r.status_code, r.text[:300])
+    r.raise_for_status()
+    ws = a.workspace or r.json().get("workspace_id") or r.json().get("team_id")
+    r = c.post("/collaborations", json={
+        "bridge_type": "slack", "display_name": a.name, "set_as_default": True, "channel_creation_enabled": True,
+        "connection_config": {"bot_token": bot, "app_token": app, "workspace_id": ws}})
+    print("connect", r.status_code, r.text[:300])
+
+
+def cmd_users(c, a):
+    """People Switch knows, with their ids (for addressing rules)."""
+    print(json.dumps(c.get("/users").json(), indent=1)[:4000])
+
+
 def cmd_approvals(c, a):
     print(json.dumps(c.get("/agent-sessions/approvals").json(), indent=1)[:4000])
 
@@ -117,6 +136,8 @@ def main():
     p = sub.add_parser("say"); p.add_argument("room"); p.add_argument("text"); p.add_argument("--mention", nargs="*", default=[])
     p = sub.add_parser("join"); p.add_argument("room")
     sub.add_parser("approvals")
+    p = sub.add_parser("slack"); p.add_argument("--name", default="Slack"); p.add_argument("--workspace", default="")
+    sub.add_parser("users")
     p = sub.add_parser("answer")
     for k in ("agent", "session", "request", "option"):
         p.add_argument(k)
