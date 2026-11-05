@@ -20,6 +20,26 @@ from .state import Store
 mcp = MCPServer("bakeoff")
 
 
+def _safe(fn):
+    """Return GitHub and input errors to the agent as one readable line instead of a stack trace."""
+    import functools
+
+    import httpx
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            what = {404: "not found (check owner/name and the number)", 401: "GitHub token rejected",
+                    403: "GitHub refused (token scope or rate limit)"}.get(code, f"GitHub error {code}")
+            return f"ERROR: {e.request.method} {e.request.url.path}: {what}."
+        except (httpx.HTTPError, ValueError, KeyError) as e:
+            return f"ERROR: {type(e).__name__}: {e}"
+    return wrapper
+
+
 def _agent() -> str:
     return os.environ.get("BAKEOFF_AGENT", "unknown-agent")
 
@@ -30,6 +50,7 @@ def _readers() -> list[str] | None:
 
 
 @mcp.tool()
+@_safe
 def done_when(repo: str, issue: int) -> str:
     """The issue's Done-when checklist, numbered from 1, as code reads it from the issue body."""
     c = collect_contest(GitHub(repo), issue)
@@ -39,6 +60,7 @@ def done_when(repo: str, issue: int) -> str:
 
 
 @mcp.tool()
+@_safe
 def contest_matrix(repo: str, issue: int) -> str:
     """The contest matrix: one column per open PR closing the issue. CI, files and scope come from GitHub;
     checklist cells come from the readers' recorded verdicts (yes / NO / SPLIT / 1/2 waiting / - unread)."""
@@ -52,12 +74,14 @@ def contest_matrix(repo: str, issue: int) -> str:
 
 
 @mcp.tool()
+@_safe
 def pr_diff(repo: str, pr: int) -> str:
     """The unified diff of one PR (truncated for very large PRs)."""
     return GitHub(repo).diff(pr)
 
 
 @mcp.tool()
+@_safe
 def record_readings(repo: str, issue: int, pr: int, readings: list[dict]) -> str:
     """Record your verdict on each Done-when item for one PR.
     readings: [{"item": 1, "verdict": "met" | "unmet" | "unclear", "evidence": "file.py:41 returns None on an empty body"}]
@@ -74,6 +98,7 @@ def record_readings(repo: str, issue: int, pr: int, readings: list[dict]) -> str
 
 if os.environ.get("BAKEOFF_ALLOW_MERGE") == "1":
     @mcp.tool()
+    @_safe
     def merge_pick(repo: str, issue: int, pr: int, decided_by: str) -> str:
         """Merge the PR a maintainer picked and post a reasoned note on every other PR in the contest.
         Call only when a maintainer has named the PR in the room; decided_by is that maintainer's name.

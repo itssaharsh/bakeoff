@@ -92,7 +92,8 @@ room:
     - Everyone keeps messages short. No pep talk, no restating the matrix.
 kickoff: |
   @{reader} @{second_reader} contest for {repo}#{issue}: read every candidate.
-  1. Assume your role ({reader}: checker, {second_reader}: second-opinion).
+  1. Assume your own role and no other: {reader} assumes `checker`, {second_reader} assumes
+     `second-opinion`. If your role is taken, say so and stop; never take the other one.
   2. Call done_when and contest_matrix for {repo} issue {issue}, then pr_diff for each PR.
   3. record_readings for every PR and every item, with file:line evidence.
   4. Post your reading in at most 8 lines: per PR, what it misses. Then call contest_matrix

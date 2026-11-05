@@ -38,3 +38,15 @@ def test_record_readings_uses_agent_env_not_argument(monkeypatch, tmp_path):
     assert [(r.agent, r.item, r.verdict) for r in rs] == [("bakeoff-checker", 0, "met"), ("bakeoff-checker", 1, "unmet")]
     bad = mod.record_readings("o/r", 7, 11, [{"item": 1, "verdict": "probably"}])
     assert bad.startswith("Nothing recorded")
+
+
+def test_tool_errors_come_back_as_one_line(monkeypatch):
+    import httpx
+    mod = _load(monkeypatch, allow=False)
+
+    def boom(*a, **k):
+        req = httpx.Request("GET", "https://api.github.com/repos/o/r/issues/999")
+        raise httpx.HTTPStatusError("x", request=req, response=httpx.Response(404, request=req))
+    monkeypatch.setattr(mod, "collect_contest", boom)
+    out = mod.done_when("o/r", 999)
+    assert out.startswith("ERROR:") and "not found" in out
