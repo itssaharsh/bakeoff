@@ -40,6 +40,14 @@ def _safe(fn):
     return wrapper
 
 
+MERGE = os.environ.get("BAKEOFF_ALLOW_MERGE") == "1"
+
+
+def _reader_tool(fn):
+    """Register a reading tool, except on the merge agent, which gets merge_pick alone."""
+    return fn if MERGE else mcp.tool()(fn)
+
+
 def _agent() -> str:
     return os.environ.get("BAKEOFF_AGENT", "unknown-agent")
 
@@ -49,7 +57,7 @@ def _readers() -> list[str] | None:
     return [a.strip() for a in raw.split(",") if a.strip()] or None
 
 
-@mcp.tool()
+@_reader_tool
 @_safe
 def done_when(repo: str, issue: int) -> str:
     """The issue's Done-when checklist, numbered from 1, as code reads it from the issue body."""
@@ -59,7 +67,7 @@ def done_when(repo: str, issue: int) -> str:
     return f"#{issue} {c.title}\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(c.items, 1))
 
 
-@mcp.tool()
+@_reader_tool
 @_safe
 def contest_matrix(repo: str, issue: int) -> str:
     """The contest matrix: one column per open PR closing the issue. CI, files and scope come from GitHub;
@@ -73,14 +81,14 @@ def contest_matrix(repo: str, issue: int) -> str:
     return "\n".join(lines)
 
 
-@mcp.tool()
+@_reader_tool
 @_safe
 def pr_diff(repo: str, pr: int) -> str:
     """The unified diff of one PR (truncated for very large PRs)."""
     return GitHub(repo).diff(pr)
 
 
-@mcp.tool()
+@_reader_tool
 @_safe
 def record_readings(repo: str, issue: int, pr: int, readings: list[dict]) -> str:
     """Record your verdict on each Done-when item for one PR.
@@ -96,7 +104,7 @@ def record_readings(repo: str, issue: int, pr: int, readings: list[dict]) -> str
     return f"Recorded {n} verdicts from {agent} for #{pr} on #{issue}."
 
 
-if os.environ.get("BAKEOFF_ALLOW_MERGE") == "1":
+if MERGE:
     @mcp.tool()
     @_safe
     def merge_pick(repo: str, issue: int, pr: int, decided_by: str) -> str:

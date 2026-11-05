@@ -23,7 +23,7 @@ def test_readers_do_not_get_merge(monkeypatch):
 
 def test_merge_agent_gets_merge(monkeypatch):
     mod = _load(monkeypatch, allow=True)
-    assert "merge_pick" in _tool_names(mod)
+    assert _tool_names(mod) == {"merge_pick"}
 
 
 def test_record_readings_uses_agent_env_not_argument(monkeypatch, tmp_path):

@@ -38,10 +38,9 @@ J
 claude_agent bakeoff-checker 0 \
   '["mcp__bakeoff__done_when","mcp__bakeoff__contest_matrix","mcp__bakeoff__pr_diff","mcp__bakeoff__record_readings"]' \
   '["Bash","Edit","Write","WebFetch","WebSearch"]'
-# The merge agent may read the matrix; merge_pick is deliberately NOT allowed, so Switch asks a person first.
-claude_agent bakeoff-merge 1 \
-  '["mcp__bakeoff__done_when","mcp__bakeoff__contest_matrix"]' \
-  '["Bash","Edit","Write","WebFetch","WebSearch","mcp__bakeoff__pr_diff","mcp__bakeoff__record_readings"]'
+# The merge agent's MCP server exposes merge_pick only, and it is deliberately NOT allowed here,
+# so every pick stops at a Switch approval card for a person.
+claude_agent bakeoff-merge 1 '[]' '["Bash","Edit","Write","WebFetch","WebSearch","Read","Glob","Grep"]'
 
 d="$AGENTS_DIR/bakeoff-second"; mkdir -p "$d"
 cat > "$d/opencode.json" <<J

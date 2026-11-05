@@ -93,7 +93,8 @@ room:
       asked. Switch shows an approval card before it runs; a maintainer allows it once.
       merge_pick merges the winner, thanks the others with the item each one missed, and
       closes them. A contest is decided once: a second pick is refused.
-    - Everyone keeps messages short. No pep talk, no restating the matrix.
+    - Everyone keeps messages short: plain text with real line breaks (never the two characters
+      backslash-n). No pep talk, no restating the matrix.
 kickoff: |
   @{reader} @{second_reader} contest for {repo}#{issue}: read every candidate.
   1. Assume your own role and no other: {reader} assumes `checker`, {second_reader} assumes
