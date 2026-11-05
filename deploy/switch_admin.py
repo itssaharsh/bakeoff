@@ -124,6 +124,31 @@ def cmd_users(c, a):
         print("unconfirmed", r.status_code, r.text[:2500])
 
 
+READER_INSTRUCTIONS = {
+    "bakeoff-checker": "In Bakeoff contest rooms your role is `checker`. Assume `checker` and never any other role. "
+                       "If `checker` is held by someone else, say so and wait; do not take `second-opinion`.",
+    "bakeoff-second": "In Bakeoff contest rooms your role is `second-opinion`. Assume `second-opinion` and never "
+                      "`checker`, even if `checker` is free: the checker is another agent. Record your own "
+                      "verdicts with record_readings before you read anyone else's reading. Be strict: an item is "
+                      "met only when the diff shows it, with file:line.",
+    "bakeoff-merge": "In Bakeoff contest rooms you only execute a maintainer's pick with merge_pick, naming the "
+                     "maintainer who asked. Never read diffs, never judge, never pick. If the room shows the contest "
+                     "was already decided, say who decided and when, and do not call merge_pick.",
+}
+
+
+def cmd_instruct(c, a):
+    """Write each Bakeoff agent's standing instructions into its Switch agent definition."""
+    for name, text in READER_INSTRUCTIONS.items():
+        ids = agent_ids(c)
+        r = c.get(f"/management/agents/{ids[name]}")
+        r.raise_for_status()
+        definition = r.json().get("definition", {})
+        definition["instructions"] = text
+        r = c.patch(f"/management/agents/{ids[name]}", json={"definition": definition})
+        print(name, r.status_code, r.text[:160] if r.status_code >= 400 else "")
+
+
 def cmd_archive(c, a):
     for room in a.rooms:
         print(room, c.post(f"/rooms/{room}/archive").status_code)
@@ -152,6 +177,7 @@ def main():
     p = sub.add_parser("slack"); p.add_argument("--name", default="Slack"); p.add_argument("--workspace", default="")
     p = sub.add_parser("users"); p.add_argument("--bridge", default="")
     p = sub.add_parser("archive"); p.add_argument("rooms", nargs="+")
+    sub.add_parser("instruct")
     p = sub.add_parser("answer")
     for k in ("agent", "session", "request", "option"):
         p.add_argument(k)

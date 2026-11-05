@@ -17,8 +17,10 @@ def _matrix(args) -> int:
     if not c.prs:
         print(f"Issue #{args.issue} in {args.repo} has no open pull requests that close it.", file=sys.stderr)
         return 1
+    from .watch import readers
+
     readings = Store().readings(args.repo, args.issue)
-    m = c.matrix(readings)
+    m = c.matrix(readings, readers())
     if args.json:
         print(json.dumps(asdict(m), indent=2))
     else:
