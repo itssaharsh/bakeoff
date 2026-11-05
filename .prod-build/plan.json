@@ -126,11 +126,17 @@
         "uv run pytest -q tests/test_pick.py tests/test_state.py"
       ],
       "rollback": "git revert the T03 commit",
-      "status": "todo",
+      "status": "done",
       "notes": "",
       "size": "L",
       "risk": [
         "external-side-effect"
+      ],
+      "base": "b4a90c6",
+      "started_after": 7,
+      "evidence": [
+        "E0012",
+        "E0013"
       ]
     },
     {

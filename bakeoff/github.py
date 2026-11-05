@@ -80,8 +80,18 @@ class GitHub:
     def issue(self, n: int) -> dict:
         return self._get(f"/repos/{self.repo}/issues/{n}")
 
-    def open_pulls(self) -> list[dict]:
-        return self._get(f"/repos/{self.repo}/pulls", state="open", per_page=100)
+    def open_pulls(self, max_pages: int = 10) -> list[dict]:
+        out, url = [], f"/repos/{self.repo}/pulls"
+        params = {"state": "open", "per_page": 100}
+        for _ in range(max_pages):
+            r = self.http.get(url, params=params)
+            r.raise_for_status()
+            out.extend(r.json())
+            nxt = r.links.get("next", {}).get("url")
+            if not nxt:
+                break
+            url, params = nxt, None
+        return out
 
     def pull(self, n: int) -> dict:
         return self._get(f"/repos/{self.repo}/pulls/{n}")
