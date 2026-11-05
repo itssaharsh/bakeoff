@@ -26,6 +26,22 @@ def _matrix(args) -> int:
     return 0
 
 
+def _summary(args) -> int:
+    from .github import GitHub, collect_contest
+    from .state import Store
+    from .summary import summary_lines
+
+    c = collect_contest(GitHub(args.repo), args.issue)
+    if not c.prs:
+        print(f"no competing pull requests for #{args.issue}", file=sys.stderr)
+        return 1
+    readings = Store().readings(args.repo, args.issue)
+    m = c.matrix(readings)
+    for line in summary_lines(m):
+        print(line)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="bakeoff", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -33,6 +49,9 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("repo")
     m.add_argument("issue", type=int)
     m.add_argument("--json", action="store_true")
+    s = sub.add_parser("summary", help="print one line per competing PR for OWNER/REPO ISSUE")
+    s.add_argument("repo")
+    s.add_argument("issue", type=int)
     sub.add_parser("mcp", help="run the Bakeoff MCP server on stdio")
     w = sub.add_parser("watch", help="open a Switch room for every contested issue")
     w.add_argument("repo", nargs="+")
@@ -41,6 +60,8 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.cmd == "matrix":
         return _matrix(args)
+    if args.cmd == "summary":
+        return _summary(args)
     if args.cmd == "mcp":
         from .mcp_server import run
         run()
