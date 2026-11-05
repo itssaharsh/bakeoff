@@ -57,13 +57,16 @@ def agent_ids(c: httpx.Client) -> dict[str, str]:
 def cmd_policies(c, a):
     ids = agent_ids(c)
     intake = ids.get(a.intake, a.intake)
-    readers_policy = {"rules": [OWNER_RULE, {**OWNER_RULE, "owner": False, "owner_agents": False, "agents": [intake]}]}
+    # Readers answer any person in the room (questions are welcome) and the intake bot (the kickoff).
+    readers_policy = {"rules": [OWNER_RULE, {**OWNER_RULE, "owner": False, "owner_agents": False,
+                                             "users": "*", "agents": [intake]}]}
     for name in ("bakeoff-checker", "bakeoff-second"):
         r = c.put(f"/agents/{ids[name]}/addressing-policy", json={"policy": readers_policy})
         print(name, r.status_code)
     # The merge agent answers its owner (the maintainer) and the listed maintainers only; agents may
     # not instruct it, so a reader can never trigger a merge.
     rules = [{**OWNER_RULE, "owner_agents": False}]
+    ext = c.get("/auth/session").json()  # noqa: F841 (session check)
     if a.merge_extra_users:
         rules.append({**OWNER_RULE, "owner": False, "owner_agents": False, "users": a.merge_extra_users, "agents": []})
     r = c.put(f"/agents/{ids['bakeoff-merge']}/addressing-policy", json={"policy": {"rules": rules}})
@@ -112,8 +115,13 @@ def cmd_slack(c, a):
 
 
 def cmd_users(c, a):
-    """People Switch knows, with their ids (for addressing rules)."""
-    print(json.dumps(c.get("/users").json(), indent=1)[:4000])
+    """Chat accounts Switch has seen on a bridge, with the ids addressing rules use."""
+    for path in ("/users", "/collaborations"):
+        r = c.get(path)
+        print(path, r.status_code, json.dumps(r.json(), indent=1)[:2500])
+    if a.bridge:
+        r = c.get(f"/collaborations/{a.bridge}/identities/unconfirmed")
+        print("unconfirmed", r.status_code, r.text[:2500])
 
 
 def cmd_approvals(c, a):
@@ -137,7 +145,7 @@ def main():
     p = sub.add_parser("join"); p.add_argument("room")
     sub.add_parser("approvals")
     p = sub.add_parser("slack"); p.add_argument("--name", default="Slack"); p.add_argument("--workspace", default="")
-    sub.add_parser("users")
+    p = sub.add_parser("users"); p.add_argument("--bridge", default="")
     p = sub.add_parser("answer")
     for k in ("agent", "session", "request", "option"):
         p.add_argument(k)
