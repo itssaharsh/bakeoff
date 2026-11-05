@@ -253,14 +253,18 @@
         "observe: issue has four open PRs from four agents with CI results"
       ],
       "rollback": "git revert the T08 commit",
-      "status": "doing",
+      "status": "done",
       "notes": "",
       "size": "M",
       "risk": [
         "external-side-effect"
       ],
       "base": "2c7f6c5",
-      "started_after": 16
+      "started_after": 16,
+      "evidence": [
+        "E0017",
+        "E0018"
+      ]
     },
     {
       "id": "T09",

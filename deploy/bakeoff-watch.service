@@ -1,0 +1,12 @@
+[Unit]
+Description=Bakeoff intake watcher (opens one Switch room per contested issue)
+After=network-online.target
+
+[Service]
+EnvironmentFile=%h/bakeoff.env
+ExecStart=%h/.local/bin/uv run --quiet --project %h/bakeoff bakeoff watch ${BAKEOFF_REPOS}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
