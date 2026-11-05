@@ -38,6 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("repo", nargs="+")
     w.add_argument("--interval", type=int, default=30)
     w.add_argument("--once", action="store_true")
+    w.add_argument("--only", type=int, nargs="*", help="watch only these issue numbers")
     args = ap.parse_args(argv)
     if args.cmd == "matrix":
         return _matrix(args)
@@ -47,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.cmd == "watch":
         from .watch import run_watch
-        return run_watch(args.repo, interval=args.interval, once=args.once)
+        return run_watch(args.repo, interval=args.interval, once=args.once, only=args.only)
     return 2
 
 

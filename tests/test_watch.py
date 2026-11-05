@@ -63,3 +63,11 @@ def test_switch_client_finds_room_id():
     assert _find_room_id({"result": {"rooms": [{"room": {"id": "!x"}}]}}) == "!x"
     assert _find_room_id({"room_id": "!y"}) == "!y"
     assert _find_room_id({"nothing": 1}) == ""
+
+
+def test_only_filter(tmp_path, monkeypatch):
+    monkeypatch.setattr(watch, "contested_issues", lambda gh: {1: [2, 3], 7: [6, 8]})
+    seen = []
+    monkeypatch.setattr(watch, "collect_contest", lambda gh, n: seen.append(n) or make([]))
+    watch.tick(FakeGH(), FakeSwitch(), Store(tmp_path / "s.json"), "m", only={7})
+    assert seen == [7]

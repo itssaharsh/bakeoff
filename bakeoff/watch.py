@@ -37,10 +37,12 @@ def readers() -> list[str]:
     return [a.strip() for a in raw.split(",") if a.strip()]
 
 
-def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str) -> list[str]:
+def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str, only: set[int] | None = None) -> list[str]:
     """One pass over one repository. Returns what it did, for the log."""
     did: list[str] = []
     for issue, prs in sorted(contested_issues(gh).items()):
+        if only and issue not in only:
+            continue
         state = store.contest(gh.repo, issue) or {}
         if state.get("winner"):
             continue
@@ -70,7 +72,7 @@ def tick(gh: GitHub, switch: Switch, store: Store, maintainer: str) -> list[str]
     return did
 
 
-def run_watch(repos: list[str], interval: int = 30, once: bool = False) -> int:
+def run_watch(repos: list[str], interval: int = 30, once: bool = False, only: list[int] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     switch, store = Switch(), Store()
     maintainer = os.environ.get("BAKEOFF_MAINTAINER", "")
@@ -80,7 +82,7 @@ def run_watch(repos: list[str], interval: int = 30, once: bool = False) -> int:
     while True:
         for repo in repos:
             try:
-                for line in tick(GitHub(repo), switch, store, maintainer):
+                for line in tick(GitHub(repo), switch, store, maintainer, set(only or [])):
                     log.info("%s: %s", repo, line)
             except Exception as e:  # keep watching; the next pass retries
                 log.warning("%s: %s", repo, e)
