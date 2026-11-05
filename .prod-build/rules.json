@@ -1,0 +1,66 @@
+{
+  "rules": [
+    {
+      "id": "switch-central",
+      "quote": "Switch has to be central to your project, and your README should show how you used it.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": true,
+      "kind": "section",
+      "added": "2026-11-05T14:24:05Z",
+      "file": "README.md",
+      "heading": "How Bakeoff uses Switch",
+      "number": false
+    },
+    {
+      "id": "public-repo-setup",
+      "quote": "Track 1 & 2: Make sure it's public repository, with a README that explains how to set it up.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": true,
+      "kind": "section",
+      "added": "2026-11-05T14:24:05Z",
+      "file": "README.md",
+      "heading": "Run it yourself",
+      "number": false
+    },
+    {
+      "id": "built-in-window",
+      "quote": "Existing agents, libraries and templates are fine. The Switch setup and the workflow your agents run need to be built during the hackathon.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": true,
+      "kind": "attest",
+      "added": "2026-11-05T14:24:05Z"
+    },
+    {
+      "id": "video-3min",
+      "quote": "Keep it under 3 minutes. Host it on YouTube or Loom, and make sure it's public or unlisted.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": true,
+      "kind": "attest",
+      "added": "2026-11-05T14:24:06Z"
+    },
+    {
+      "id": "video-teammates",
+      "quote": "Track 1 & 2: Show the agent working in a real chat with your teammates.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": false,
+      "kind": "attest",
+      "added": "2026-11-05T14:24:06Z"
+    },
+    {
+      "id": "wispr-card",
+      "quote": "Your Wispr usage card ... Required for Code with Wispr",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": false,
+      "kind": "attest",
+      "added": "2026-11-05T14:24:06Z"
+    },
+    {
+      "id": "ai-explain",
+      "quote": "Can I use AI coding tools? Yes. You should understand what you submit and be able to explain how it works.",
+      "source": "https://www.wemakedevs.org/hackathons/switch",
+      "dq": false,
+      "kind": "attest",
+      "added": "2026-11-05T14:24:07Z"
+    }
+  ]
+}

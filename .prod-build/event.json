@@ -1,0 +1,14 @@
+{
+  "name": "Flip the Switch (WeMakeDevs)",
+  "start": "2026-11-03T18:31:00Z",
+  "end": "2026-11-07T18:29:00Z",
+  "freeze": "2026-11-07T06:58:02Z",
+  "source": "https://wemakedevs-server.onrender.com/hackathons/switch",
+  "history": "strict",
+  "tz_min": 330,
+  "video_cap_s": 180,
+  "sponsors": [
+    "Switch"
+  ],
+  "set_at": "2026-11-05T14:23:43Z"
+}
