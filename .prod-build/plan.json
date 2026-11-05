@@ -91,9 +91,15 @@
         "uv run pytest -q tests/test_github.py"
       ],
       "rollback": "git revert the T02 commit",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "size": "M"
+      "size": "M",
+      "base": "76305fe",
+      "started_after": 4,
+      "evidence": [
+        "E0006",
+        "E0007"
+      ]
     },
     {
       "id": "T03",
