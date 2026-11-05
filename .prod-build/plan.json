@@ -1,434 +1,440 @@
 {
- "project": "bakeoff",
- "mode": "hackathon",
- "channel": "direct",
- "base": "0391c94",
- "created": "2026-11-05",
- "milestones": [
-  {
-   "id": "M1",
-   "goal": "J1-J3 work end to end in a Switch room on EC2",
-   "tasks": [
-    "T01",
-    "T02",
-    "T03",
-    "T04",
-    "T05",
-    "T06",
-    "T07"
-   ]
-  },
-  {
-   "id": "M2",
-   "goal": "Real demo world, Slack with teammates, coda, docs, video, submission",
-   "tasks": [
-    "T08",
-    "T09",
-    "T10",
-    "T11",
-    "T12",
-    "T13",
-    "T14",
-    "T15",
-    "T16",
-    "T17"
-   ]
-  }
- ],
- "tasks": [
-  {
-   "id": "T01",
-   "title": "Done-when parser and contest matrix (pure code)",
-   "objective": "Extract the checklist from an issue body and build the matrix rows, CI-vs-claim flags and reading disagreements from collected facts",
-   "deps": [],
-   "writes": [
-    "bakeoff/__init__.py",
-    "bakeoff/donewhen.py",
-    "bakeoff/matrix.py",
-    "tests/test_donewhen.py",
-    "tests/test_matrix.py",
-    "pyproject.toml",
-    "uv.lock"
-   ],
-   "acceptance": [
-    "AC-2",
-    "AC-3",
-    "AC-4"
-   ],
-   "verify": [
-    "uv run pytest -q tests/test_donewhen.py tests/test_matrix.py"
-   ],
-   "rollback": "git revert the T01 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "M"
-  },
-  {
-   "id": "T02",
-   "title": "GitHub collector and `bakeoff matrix` CLI",
-   "objective": "Fetch issue, linked open PRs, CI conclusions, files and body claims; print the matrix for OWNER/REPO ISSUE",
-   "deps": [
-    "T01"
-   ],
-   "writes": [
-    "bakeoff/github.py",
-    "bakeoff/cli.py",
-    "tests/test_github.py",
-    "pyproject.toml",
-    "uv.lock"
-   ],
-   "acceptance": [
-    "AC-1 (detection part)",
-    "WHEN `bakeoff matrix OWNER/REPO N` runs on a live issue THE SYSTEM SHALL print one column per open PR closing it"
-   ],
-   "verify": [
-    "uv run pytest -q tests/test_github.py"
-   ],
-   "rollback": "git revert the T02 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "M"
-  },
-  {
-   "id": "T03",
-   "title": "Bakeoff MCP server: readings and merge_pick",
-   "objective": "stdio MCP tools done_when, contest_matrix, pr_diff, record_reading, merge_pick with a single-use decision per contest",
-   "deps": [
-    "T02"
-   ],
-   "writes": [
-    "bakeoff/mcp_server.py",
-    "bakeoff/state.py",
-    "bakeoff/pick.py",
-    "tests/test_pick.py",
-    "tests/test_state.py",
-    "pyproject.toml",
-    "uv.lock"
-   ],
-   "acceptance": [
-    "AC-5",
-    "AC-6",
-    "AC-7"
-   ],
-   "verify": [
-    "uv run pytest -q tests/test_pick.py tests/test_state.py"
-   ],
-   "rollback": "git revert the T03 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "L",
-   "risk": [
-    "external-side-effect"
-   ]
-  },
-  {
-   "id": "T04",
-   "title": "Room template, Switch bridge client and intake watcher",
-   "objective": "Watcher finds contests and creates one Switch room per contest from templates/bakeoff.room.yaml through the agent bridge, then posts the matrix",
-   "deps": [
-    "T03"
-   ],
-   "writes": [
-    "templates/bakeoff.room.yaml",
-    "bakeoff/switch_api.py",
-    "bakeoff/watch.py",
-    "tests/test_watch.py"
-   ],
-   "acceptance": [
-    "AC-1"
-   ],
-   "verify": [
-    "uv run pytest -q tests/test_watch.py"
-   ],
-   "rollback": "git revert the T04 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "M"
-  },
-  {
-   "id": "T05",
-   "title": "Switch server, controller and three agents on EC2",
-   "objective": "Headless Switch (server, gateway, Mattermost) and the agent controller with bakeoff-checker, bakeoff-second, bakeoff-merge online; runbook written",
-   "deps": [],
-   "writes": [],
-   "acceptance": [
-    "an agent replies in a room; the bridge API posts a message"
-   ],
-   "verify": [
-    "observe: bakeoff-checker replies in a Switch room on the EC2 server"
-   ],
-   "rollback": "stop the compose stack; instance can be stopped",
-   "status": "todo",
-   "notes": "",
-   "kind": "deploy"
-  },
-  {
-   "id": "T06",
-   "title": "Wire Bakeoff into Switch end to end",
-   "objective": "Install bakeoff on the box, MCP config for the agents, merge agent with approvals and maintainer-only addressing, watcher as a service; one contest runs end to end",
-   "deps": [
-    "T04",
-    "T05"
-   ],
-   "writes": [
-    "deploy/box-setup.sh",
-    "deploy/bakeoff-watch.service",
-    "deploy/agents.md"
-   ],
-   "acceptance": [
-    "AC-8",
-    "AC-9",
-    "J1-J3 end to end"
-   ],
-   "verify": [
-    "observe: a contest room opens, both agents record readings, approval card, merge and decline notes land on GitHub"
-   ],
-   "rollback": "git revert the T06 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "L",
-   "risk": [
-    "external-side-effect"
-   ]
-  },
-  {
-   "id": "T07",
-   "title": "Backup take of the working path",
-   "objective": "Screen-record one full contest run as soon as J1-J3 work",
-   "deps": [
-    "T06"
-   ],
-   "writes": [],
-   "acceptance": [
-    "a recording exists of J1-J3"
-   ],
-   "verify": [
-    "observe: backup recording of a full contest run saved"
-   ],
-   "rollback": "git revert the T07 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "record"
-  },
-  {
-   "id": "T08",
-   "title": "Demo world: real issue and four agents' PRs",
-   "objective": "CI workflow on this repo; a real issue with a Done-when list; four PRs written by Claude Code, Kimi Code, Pi and OpenCode, each saying which agent wrote it",
-   "deps": [
-    "T04"
-   ],
-   "writes": [
-    ".github/workflows/ci.yml",
-    "scripts/race.sh",
-    "docs/demo-world.md"
-   ],
-   "acceptance": [
-    "the issue shows four open PRs closing it, each with CI results"
-   ],
-   "verify": [
-    "observe: issue has four open PRs from four agents with CI results"
-   ],
-   "rollback": "git revert the T08 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "M",
-   "risk": [
-    "external-side-effect"
-   ]
-  },
-  {
-   "id": "T09",
-   "title": "Slack bridge, friends and three rehearsals",
-   "objective": "Register the Slack bridge, link the friends, run the demo flow three times with resets",
-   "deps": [
-    "T06",
-    "T08",
-    "T15"
-   ],
-   "writes": [
-    "scripts/reset_demo.sh"
-   ],
-   "acceptance": [
-    "demo flow runs 3 times in a row"
-   ],
-   "verify": [
-    "observe: demo flow ran three times in Slack with resets"
-   ],
-   "rollback": "git revert the T09 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "verify"
-  },
-  {
-   "id": "T10",
-   "title": "Personal coda: which homepage should I ship",
-   "objective": "Homepage repo with a brief and a CI must-have check; candidates' screenshots posted in the room; owner picks; merge deploys to GitHub Pages",
-   "deps": [
-    "T06"
-   ],
-   "writes": [
-    "templates/bakeoff-personal.room.yaml",
-    "bakeoff/screenshot.py",
-    "docs/personal-mode.md"
-   ],
-   "acceptance": [
-    "WHEN the owner's pick is approved THE SYSTEM SHALL merge it and the live page shows the picked design"
-   ],
-   "verify": [
-    "observe: picked homepage live on GitHub Pages after approval"
-   ],
-   "rollback": "git revert the T10 commit",
-   "status": "todo",
-   "notes": "",
-   "size": "M"
-  },
-  {
-   "id": "T11",
-   "title": "Security pass and fresh-eyes review",
-   "objective": "Secrets scan, token scopes, merge_pick refusal paths, fresh reviewer on the diff",
-   "deps": [
-    "T06"
-   ],
-   "writes": [],
-   "acceptance": [
-    "no secrets in repo or logs; blocking findings fixed"
-   ],
-   "verify": [
-    "uv run pytest -q",
-    "observe: fresh review report saved in .prod-build/reports"
-   ],
-   "rollback": "git revert the T11 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "review"
-  },
-  {
-   "id": "T12",
-   "title": "README, docs and blog draft",
-   "objective": "README with judge card, how Bakeoff uses Switch, run it yourself; blog post for first-time Switch users",
-   "deps": [
-    "T06"
-   ],
-   "writes": [
-    "README.md",
-    "docs/blog.md",
-    "docs/architecture.svg"
-   ],
-   "acceptance": [
-    "README sections exist and match the run"
-   ],
-   "verify": [
-    "observe: README read top to bottom against a clean clone"
-   ],
-   "rollback": "git revert the T12 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "docs",
-   "suite": false
-  },
-  {
-   "id": "T13",
-   "title": "Final take",
-   "objective": "Record the final video from the frozen build, under 3 minutes",
-   "deps": [
-    "T09",
-    "T12"
-   ],
-   "writes": [],
-   "acceptance": [
-    "video under 180 s"
-   ],
-   "verify": [
-    "observe: final video under 180 seconds exported"
-   ],
-   "rollback": "git revert the T13 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "record"
-  },
-  {
-   "id": "T14",
-   "title": "Submit",
-   "objective": "Form answers, pb.py submit check, links opened signed out",
-   "deps": [
-    "T13"
-   ],
-   "writes": [
-    "docs/submission.md"
-   ],
-   "acceptance": [
-    "submit check passes"
-   ],
-   "verify": [
-    "observe: submit check passes and form submitted"
-   ],
-   "rollback": "git revert the T14 commit",
-   "status": "todo",
-   "notes": "",
-   "kind": "submit",
-   "suite": false
-  },
-  {
-   "id": "T15",
-   "title": "Slack bot token and workspace id",
-   "objective": "Builder installs the Slack app and stores xoxb token + workspace id",
-   "deps": [],
-   "writes": [],
-   "acceptance": [
-    "tokens in SSM"
-   ],
-   "verify": [
-    "manual: xoxb token in SSM /switch-demo/slack-bot-token and workspace id given"
-   ],
-   "rollback": "n/a",
-   "status": "todo",
-   "notes": "",
-   "owner": "builder",
-   "due": "2026-11-05T18:00:00Z"
-  },
-  {
-   "id": "T16",
-   "title": "Friends join Slack for recording",
-   "objective": "2-3 friends join the workspace and the recording session",
-   "deps": [
-    "T15"
-   ],
-   "writes": [],
-   "acceptance": [
-    "friends in workspace"
-   ],
-   "verify": [
-    "manual: 2-3 friends joined Slack and booked a 30 min slot"
-   ],
-   "rollback": "n/a",
-   "status": "todo",
-   "notes": "",
-   "owner": "builder",
-   "due": "2026-11-06T14:00:00Z"
-  },
-  {
-   "id": "T17",
-   "title": "Upload video, Wispr card, press submit",
-   "objective": "Builder uploads the video (public/unlisted), screenshots the Wispr usage card, submits the form",
-   "deps": [
-    "T13"
-   ],
-   "writes": [],
-   "acceptance": [
-    "form submitted"
-   ],
-   "verify": [
-    "manual: form submitted with video link and Wispr card"
-   ],
-   "rollback": "n/a",
-   "status": "todo",
-   "notes": "",
-   "owner": "builder",
-   "due": "2026-11-07T16:30:00Z"
-  }
- ],
- "suite": [
-  "uv run pytest -q"
- ],
- "parallel": false
+  "project": "bakeoff",
+  "mode": "hackathon",
+  "channel": "direct",
+  "base": "0391c94",
+  "created": "2026-11-05",
+  "milestones": [
+    {
+      "id": "M1",
+      "goal": "J1-J3 work end to end in a Switch room on EC2",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07"
+      ]
+    },
+    {
+      "id": "M2",
+      "goal": "Real demo world, Slack with teammates, coda, docs, video, submission",
+      "tasks": [
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T17"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Done-when parser and contest matrix (pure code)",
+      "objective": "Extract the checklist from an issue body and build the matrix rows, CI-vs-claim flags and reading disagreements from collected facts",
+      "deps": [],
+      "writes": [
+        "bakeoff/__init__.py",
+        "bakeoff/donewhen.py",
+        "bakeoff/matrix.py",
+        "tests/test_donewhen.py",
+        "tests/test_matrix.py",
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "acceptance": [
+        "AC-2",
+        "AC-3",
+        "AC-4"
+      ],
+      "verify": [
+        "uv run pytest -q tests/test_donewhen.py tests/test_matrix.py"
+      ],
+      "rollback": "git revert the T01 commit",
+      "status": "done",
+      "notes": "",
+      "size": "M",
+      "base": "91ff6bb",
+      "started_after": 0,
+      "evidence": [
+        "E0003",
+        "E0004"
+      ]
+    },
+    {
+      "id": "T02",
+      "title": "GitHub collector and `bakeoff matrix` CLI",
+      "objective": "Fetch issue, linked open PRs, CI conclusions, files and body claims; print the matrix for OWNER/REPO ISSUE",
+      "deps": [
+        "T01"
+      ],
+      "writes": [
+        "bakeoff/github.py",
+        "bakeoff/cli.py",
+        "tests/test_github.py",
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "acceptance": [
+        "AC-1 (detection part)",
+        "WHEN `bakeoff matrix OWNER/REPO N` runs on a live issue THE SYSTEM SHALL print one column per open PR closing it"
+      ],
+      "verify": [
+        "uv run pytest -q tests/test_github.py"
+      ],
+      "rollback": "git revert the T02 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "M"
+    },
+    {
+      "id": "T03",
+      "title": "Bakeoff MCP server: readings and merge_pick",
+      "objective": "stdio MCP tools done_when, contest_matrix, pr_diff, record_reading, merge_pick with a single-use decision per contest",
+      "deps": [
+        "T02"
+      ],
+      "writes": [
+        "bakeoff/mcp_server.py",
+        "bakeoff/state.py",
+        "bakeoff/pick.py",
+        "tests/test_pick.py",
+        "tests/test_state.py",
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "acceptance": [
+        "AC-5",
+        "AC-6",
+        "AC-7"
+      ],
+      "verify": [
+        "uv run pytest -q tests/test_pick.py tests/test_state.py"
+      ],
+      "rollback": "git revert the T03 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "L",
+      "risk": [
+        "external-side-effect"
+      ]
+    },
+    {
+      "id": "T04",
+      "title": "Room template, Switch bridge client and intake watcher",
+      "objective": "Watcher finds contests and creates one Switch room per contest from templates/bakeoff.room.yaml through the agent bridge, then posts the matrix",
+      "deps": [
+        "T03"
+      ],
+      "writes": [
+        "templates/bakeoff.room.yaml",
+        "bakeoff/switch_api.py",
+        "bakeoff/watch.py",
+        "tests/test_watch.py"
+      ],
+      "acceptance": [
+        "AC-1"
+      ],
+      "verify": [
+        "uv run pytest -q tests/test_watch.py"
+      ],
+      "rollback": "git revert the T04 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "M"
+    },
+    {
+      "id": "T05",
+      "title": "Switch server, controller and three agents on EC2",
+      "objective": "Headless Switch (server, gateway, Mattermost) and the agent controller with bakeoff-checker, bakeoff-second, bakeoff-merge online; runbook written",
+      "deps": [],
+      "writes": [],
+      "acceptance": [
+        "an agent replies in a room; the bridge API posts a message"
+      ],
+      "verify": [
+        "observe: bakeoff-checker replies in a Switch room on the EC2 server"
+      ],
+      "rollback": "stop the compose stack; instance can be stopped",
+      "status": "todo",
+      "notes": "",
+      "kind": "deploy"
+    },
+    {
+      "id": "T06",
+      "title": "Wire Bakeoff into Switch end to end",
+      "objective": "Install bakeoff on the box, MCP config for the agents, merge agent with approvals and maintainer-only addressing, watcher as a service; one contest runs end to end",
+      "deps": [
+        "T04",
+        "T05"
+      ],
+      "writes": [
+        "deploy/box-setup.sh",
+        "deploy/bakeoff-watch.service",
+        "deploy/agents.md"
+      ],
+      "acceptance": [
+        "AC-8",
+        "AC-9",
+        "J1-J3 end to end"
+      ],
+      "verify": [
+        "observe: a contest room opens, both agents record readings, approval card, merge and decline notes land on GitHub"
+      ],
+      "rollback": "git revert the T06 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "L",
+      "risk": [
+        "external-side-effect"
+      ]
+    },
+    {
+      "id": "T07",
+      "title": "Backup take of the working path",
+      "objective": "Screen-record one full contest run as soon as J1-J3 work",
+      "deps": [
+        "T06"
+      ],
+      "writes": [],
+      "acceptance": [
+        "a recording exists of J1-J3"
+      ],
+      "verify": [
+        "observe: backup recording of a full contest run saved"
+      ],
+      "rollback": "git revert the T07 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "record"
+    },
+    {
+      "id": "T08",
+      "title": "Demo world: real issue and four agents' PRs",
+      "objective": "CI workflow on this repo; a real issue with a Done-when list; four PRs written by Claude Code, Kimi Code, Pi and OpenCode, each saying which agent wrote it",
+      "deps": [
+        "T04"
+      ],
+      "writes": [
+        ".github/workflows/ci.yml",
+        "scripts/race.sh",
+        "docs/demo-world.md"
+      ],
+      "acceptance": [
+        "the issue shows four open PRs closing it, each with CI results"
+      ],
+      "verify": [
+        "observe: issue has four open PRs from four agents with CI results"
+      ],
+      "rollback": "git revert the T08 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "M",
+      "risk": [
+        "external-side-effect"
+      ]
+    },
+    {
+      "id": "T09",
+      "title": "Slack bridge, friends and three rehearsals",
+      "objective": "Register the Slack bridge, link the friends, run the demo flow three times with resets",
+      "deps": [
+        "T06",
+        "T08",
+        "T15"
+      ],
+      "writes": [
+        "scripts/reset_demo.sh"
+      ],
+      "acceptance": [
+        "demo flow runs 3 times in a row"
+      ],
+      "verify": [
+        "observe: demo flow ran three times in Slack with resets"
+      ],
+      "rollback": "git revert the T09 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "verify"
+    },
+    {
+      "id": "T10",
+      "title": "Personal coda: which homepage should I ship",
+      "objective": "Homepage repo with a brief and a CI must-have check; candidates' screenshots posted in the room; owner picks; merge deploys to GitHub Pages",
+      "deps": [
+        "T06"
+      ],
+      "writes": [
+        "templates/bakeoff-personal.room.yaml",
+        "bakeoff/screenshot.py",
+        "docs/personal-mode.md"
+      ],
+      "acceptance": [
+        "WHEN the owner's pick is approved THE SYSTEM SHALL merge it and the live page shows the picked design"
+      ],
+      "verify": [
+        "observe: picked homepage live on GitHub Pages after approval"
+      ],
+      "rollback": "git revert the T10 commit",
+      "status": "todo",
+      "notes": "",
+      "size": "M"
+    },
+    {
+      "id": "T11",
+      "title": "Security pass and fresh-eyes review",
+      "objective": "Secrets scan, token scopes, merge_pick refusal paths, fresh reviewer on the diff",
+      "deps": [
+        "T06"
+      ],
+      "writes": [],
+      "acceptance": [
+        "no secrets in repo or logs; blocking findings fixed"
+      ],
+      "verify": [
+        "uv run pytest -q",
+        "observe: fresh review report saved in .prod-build/reports"
+      ],
+      "rollback": "git revert the T11 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "review"
+    },
+    {
+      "id": "T12",
+      "title": "README, docs and blog draft",
+      "objective": "README with judge card, how Bakeoff uses Switch, run it yourself; blog post for first-time Switch users",
+      "deps": [
+        "T06"
+      ],
+      "writes": [
+        "README.md",
+        "docs/blog.md",
+        "docs/architecture.svg"
+      ],
+      "acceptance": [
+        "README sections exist and match the run"
+      ],
+      "verify": [
+        "observe: README read top to bottom against a clean clone"
+      ],
+      "rollback": "git revert the T12 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "docs",
+      "suite": false
+    },
+    {
+      "id": "T13",
+      "title": "Final take",
+      "objective": "Record the final video from the frozen build, under 3 minutes",
+      "deps": [
+        "T09",
+        "T12"
+      ],
+      "writes": [],
+      "acceptance": [
+        "video under 180 s"
+      ],
+      "verify": [
+        "observe: final video under 180 seconds exported"
+      ],
+      "rollback": "git revert the T13 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "record"
+    },
+    {
+      "id": "T14",
+      "title": "Submit",
+      "objective": "Form answers, pb.py submit check, links opened signed out",
+      "deps": [
+        "T13"
+      ],
+      "writes": [
+        "docs/submission.md"
+      ],
+      "acceptance": [
+        "submit check passes"
+      ],
+      "verify": [
+        "observe: submit check passes and form submitted"
+      ],
+      "rollback": "git revert the T14 commit",
+      "status": "todo",
+      "notes": "",
+      "kind": "submit",
+      "suite": false
+    },
+    {
+      "id": "T15",
+      "title": "Slack bot token and workspace id",
+      "objective": "Builder installs the Slack app and stores xoxb token + workspace id",
+      "deps": [],
+      "writes": [],
+      "acceptance": [
+        "tokens in SSM"
+      ],
+      "verify": [
+        "manual: xoxb token in SSM /switch-demo/slack-bot-token and workspace id given"
+      ],
+      "rollback": "n/a",
+      "status": "todo",
+      "notes": "",
+      "owner": "builder",
+      "due": "2026-11-05T18:00:00Z"
+    },
+    {
+      "id": "T16",
+      "title": "Friends join Slack for recording",
+      "objective": "2-3 friends join the workspace and the recording session",
+      "deps": [
+        "T15"
+      ],
+      "writes": [],
+      "acceptance": [
+        "friends in workspace"
+      ],
+      "verify": [
+        "manual: 2-3 friends joined Slack and booked a 30 min slot"
+      ],
+      "rollback": "n/a",
+      "status": "todo",
+      "notes": "",
+      "owner": "builder",
+      "due": "2026-11-06T14:00:00Z"
+    },
+    {
+      "id": "T17",
+      "title": "Upload video, Wispr card, press submit",
+      "objective": "Builder uploads the video (public/unlisted), screenshots the Wispr usage card, submits the form",
+      "deps": [
+        "T13"
+      ],
+      "writes": [],
+      "acceptance": [
+        "form submitted"
+      ],
+      "verify": [
+        "manual: form submitted with video link and Wispr card"
+      ],
+      "rollback": "n/a",
+      "status": "todo",
+      "notes": "",
+      "owner": "builder",
+      "due": "2026-11-07T16:30:00Z"
+    }
+  ],
+  "suite": [
+    "uv run pytest -q"
+  ],
+  "parallel": false
 }
