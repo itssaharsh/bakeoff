@@ -1,0 +1,98 @@
+# Bakeoff: one room per contested issue.
+#
+# The Bakeoff watcher runs this template through the Switch agent bridge when
+# two or more open pull requests say they close the same issue. It can also be
+# run by hand from Switch Console's "Create from template" wizard.
+#
+# Who does what:
+#   code (the watcher and the bakeoff MCP tools) decides the facts: CI, files, scope;
+#   two readers from different vendors decide each checklist item, with file:line;
+#   a maintainer decides the winner, by name, through an approval card;
+#   the merge agent only executes that pick. Readers cannot merge; the merger does not judge.
+params:
+  repo:
+    type: string
+    description: GitHub repository, owner/name
+  issue:
+    type: number
+    description: The contested issue number
+  issue_title:
+    type: string
+    description: The issue's title
+  candidates:
+    type: string
+    multiline: true
+    description: One line per competing pull request
+  maintainer:
+    type: user
+    description: The maintainer who decides this contest
+  reader:
+    type: agent
+    description: First reader (Claude Code)
+    default: bakeoff-checker
+  second_reader:
+    type: agent
+    description: Second reader, another vendor's model
+    default: bakeoff-second
+  merger:
+    type: agent
+    description: The agent that executes the maintainer's pick
+    default: bakeoff-merge
+room:
+  name: "bakeoff-{issue}"
+  description: "Bake-off for {repo}#{issue}: {issue_title}"
+  channel_type: channel_public
+  agents: ["{reader}", "{second_reader}", "{merger}"]
+  users: ["{maintainer}"]
+  roles:
+    - name: checker
+      exclusive: true
+      instructions: |
+        Read every competing PR against the issue's Done-when list. Record a verdict for
+        every item of every PR with record_readings (met, unmet or unclear), citing file:line
+        from pr_diff. Never mark CI, tests or scope yourself: contest_matrix has them from GitHub.
+    - name: second-opinion
+      exclusive: true
+      instructions: |
+        Same job as checker, done independently: record your own verdicts with record_readings
+        before you read the checker's message. Where you disagree, say which item and why.
+    - name: merger
+      exclusive: true
+      instructions: |
+        Execute a maintainer's pick and nothing else. Never read diffs, never judge, never pick.
+  references:
+    - type: url
+      name: "{repo}#{issue}"
+      description: The contested issue and its competing pull requests
+      instructions: The issue's Done-when list is the checklist every PR is read against.
+      value:
+        urls: ["https://github.com/{repo}/issues/{issue}"]
+  instructions: |
+    This room decides one thing: which pull request closes {repo}#{issue}
+    ("{issue_title}"). Only one can be merged.
+
+    Candidates:
+    {candidates}
+
+    How this room works
+    - Facts come from code. CI results, files touched, tests touched and files outside
+      the issue's scope come from GitHub through the bakeoff tools (contest_matrix).
+      Nobody in this room overrules them, and a PR whose CI failed cannot be picked.
+    - {reader} (role checker) and {second_reader} (role second-opinion) each read every
+      PR's diff against the issue's Done-when list and record a verdict per item with
+      file:line evidence (record_readings). Then each posts a short reading: per PR, the
+      items it misses and why. Disagreements are listed by code in contest_matrix.
+    - Contributors may be asked questions here. Keep questions specific: one item, one PR.
+    - {maintainer} decides. A maintainer picks by writing "@{merger} pick #<number>".
+    - {merger} (role merger) executes the pick with merge_pick, naming the maintainer who
+      asked. Switch shows an approval card before it runs; a maintainer allows it once.
+      merge_pick merges the winner, thanks the others with the item each one missed, and
+      closes them. A contest is decided once: a second pick is refused.
+    - Everyone keeps messages short. No pep talk, no restating the matrix.
+kickoff: |
+  @{reader} @{second_reader} contest for {repo}#{issue}: read every candidate.
+  1. Assume your role ({reader}: checker, {second_reader}: second-opinion).
+  2. Call done_when and contest_matrix for {repo} issue {issue}, then pr_diff for each PR.
+  3. record_readings for every PR and every item, with file:line evidence.
+  4. Post your reading in at most 8 lines: per PR, what it misses. Then call contest_matrix
+     again and point {maintainer} at any item where you and the other reader split.

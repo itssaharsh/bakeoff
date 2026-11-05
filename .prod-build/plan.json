@@ -159,9 +159,15 @@
         "uv run pytest -q tests/test_watch.py"
       ],
       "rollback": "git revert the T04 commit",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "size": "M"
+      "size": "M",
+      "base": "3b19e08",
+      "started_after": 13,
+      "evidence": [
+        "E0015",
+        "E0016"
+      ]
     },
     {
       "id": "T05",
