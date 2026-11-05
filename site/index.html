@@ -3,12 +3,274 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bakeoff</title>
-<style>@media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } }</style>
+<title>Bakeoff – Choose the best pull request</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+  color: #222;
+  background: #fff;
+  font-size: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  body { background: #0a0a0a; color: #e5e5e5; }
+  a { color: #4a9eff; }
+  a:visited { color: #9d6ee8; }
+  .step { border-color: #333; }
+  .step-num { background: #222; border-color: #444; }
+}
+a { color: #0066cc; text-decoration: underline; }
+a:visited { color: #663399; }
+a:hover { opacity: 0.8; }
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  color: #444;
+}
+@media (prefers-color-scheme: dark) {
+  .tagline { color: #bbb; }
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 3rem 0 2rem;
+  letter-spacing: -0.01em;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 2.5rem 0 4rem;
+}
+
+.step {
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  position: relative;
+  padding-top: 3.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  .step { background: #111; }
+}
+
+.step-num {
+  position: absolute;
+  top: -1.25rem;
+  left: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+  background: #0066cc;
+  color: white;
+  border-radius: 50%;
+  border: 4px solid #fff;
+}
+@media (prefers-color-scheme: dark) {
+  .step-num { border-color: #0a0a0a; }
+}
+
+.step-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.step-desc {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+}
+@media (prefers-color-scheme: dark) {
+  .step-desc { color: #999; }
+}
+
+.cta-section {
+  background: #f0f6ff;
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  text-align: center;
+  margin: 3rem 0;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-section { background: #0d1f2d; }
+}
+
+.cta-section h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.cta-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cta-link {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: #0066cc;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background 0.2s;
+  min-width: 200px;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-link { background: #4a9eff; color: #000; }
+}
+.cta-link:hover { background: #0052a3; }
+@media (prefers-color-scheme: dark) {
+  .cta-link:hover { background: #3a8eef; }
+}
+.cta-link:visited { color: white; }
+@media (prefers-color-scheme: dark) {
+  .cta-link:visited { color: #000; }
+}
+
+.how-it-works {
+  background: #fff9e6;
+  padding: 2.5rem;
+  border-radius: 8px;
+  margin: 3rem 0;
+  border-left: 4px solid #ffa500;
+}
+@media (prefers-color-scheme: dark) {
+  .how-it-works { background: #1a1410; border-left-color: #ff8c00; }
+}
+
+.how-it-works h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.how-it-works p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+@media (prefers-color-scheme: dark) {
+  .how-it-works p { color: #ccc; }
+}
+
+.how-it-works strong {
+  font-weight: 600;
+}
+
+footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #ddd;
+  font-size: 0.9rem;
+  color: #666;
+}
+@media (prefers-color-scheme: dark) {
+  footer { border-top-color: #333; color: #888; }
+}
+
+@media (max-width: 640px) {
+  .container { padding: 2rem 1rem; }
+  h1 { margin-bottom: 1rem; }
+  .tagline { margin-bottom: 2rem; }
+  .section-title { font-size: 1.25rem; margin: 2rem 0 1.5rem; }
+  .steps { gap: 1.5rem; }
+  .step { padding: 1.5rem; padding-top: 3rem; }
+  .cta-links { flex-direction: column; }
+  .cta-link { width: 100%; }
+}
+</style>
 </head>
 <body>
-<h1>Bakeoff</h1>
-<p>When several pull requests fix one issue, Bakeoff opens a Switch room for that issue.</p>
-<p><a href="https://github.com/itssaharsh/bakeoff">GitHub</a></p>
+<div class="container">
+  <header>
+    <h1>Bakeoff</h1>
+    <p class="tagline">When several pull requests fix one issue, Bakeoff opens a Switch room for that issue</p>
+  </header>
+
+  <section class="how-it-works">
+    <h3>The Problem</h3>
+    <p>Your maintainers spend days reading five or ten competing pull requests against a single issue. The winners get merged; the others get silence.</p>
+    <p><strong>Bakeoff turns that into one sitting in one chat room:</strong> a matrix GitHub fills, two independent readings against the issue's checklist, questions to the contributors, one named maintainer picks the winner, it merges, and everyone else gets a note naming what they missed.</p>
+  </section>
+
+  <h2 class="section-title">How It Works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Code Opens the Room</div>
+      <div class="step-desc">Bakeoff watches for multiple PRs on the same issue. When it finds them, it creates a Switch room with a contest matrix: one column per PR, all facts from GitHub.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Two Readers Read</div>
+      <div class="step-desc">Claude Code and OpenCode each read every diff against the issue's checklist. They record verdicts with file:line evidence. Code marks where they agree, split, or are waiting.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">People Talk</div>
+      <div class="step-desc">Maintainers and contributors ask and answer in the room. A reader can re-read and record a new verdict. Questions get evidence, not opinion.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">Maintainer Picks</div>
+      <div class="step-desc">A maintainer says <code style="background: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 3px;">@bakeoff-merge pick #N</code>. The room shows an approval card. Nothing happens without a person.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-title">It Lands on GitHub</div>
+      <div class="step-desc">The winning PR merges with a comment. Every other PR gets a thank-you note listing what it missed. The contest is decided once.</div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>See It in Action</h2>
+    <p style="margin-bottom: 2rem; font-size: 0.95rem;">Bakeoff ran on the demo issue below with four real pull requests from four different AI code generators.</p>
+    <div class="cta-links">
+      <a href="https://github.com/itssaharsh/bakeoff/issues/1" class="cta-link">View Demo Contest</a>
+      <a href="https://github.com/itssaharsh/bakeoff" class="cta-link">GitHub Repository</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>Built at the Flip the Switch hackathon (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026). Apache-2.0.</p>
+  </footer>
+</div>
 </body>
 </html>
