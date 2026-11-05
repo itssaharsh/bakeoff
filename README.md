@@ -2,4 +2,71 @@
 
 When several pull requests fix one issue, Bakeoff opens a Switch room for that issue: two agents from different vendors check every PR against the issue's own checklist, GitHub's CI decides what passed, and one maintainer picks the winner by name before anything is posted.
 
-Built during the Flip the Switch hackathon (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026). Planning notes and the build plan were written first, inside the window.
+> Code decides the facts, two readers decide the checklist, a maintainer decides the winner.
+
+Built during the [Flip the Switch hackathon](https://www.wemakedevs.org/hackathons/switch) (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026). Planning notes and the build plan were written first, inside the window.
+
+## The problem
+
+During this hackathon, Switch's own repository had 349 open pull requests, many issues had five to ten people claiming them, and its maintainer wrote on 29 Oct: "Only one PR will be selected per issue" ([#816](https://github.com/sandbox-quantum/switch/issues/816)). Coding agents make a pull request cheap; reading five of them against one issue is not. Today the maintainer re-reads every PR against the issue, over days, and the people whose PRs lose usually get silence or a one-line close.
+
+Bakeoff turns that into one sitting in one chat room: a matrix GitHub fills, two independent readings, questions to the contributors, a pick made by a named maintainer, one merge, and a note to every other contributor that names the checklist item their PR missed.
+
+## What happens
+
+1. **Code opens the room.** The Bakeoff watcher sees two or more open PRs that say `Closes #N` and creates the room `bakeoff-N` from [`templates/bakeoff.room.yaml`](templates/bakeoff.room.yaml) through Switch's agent bridge. It posts the contest matrix: one column per PR, with CI, tests touched and files outside the issue's scope, all from GitHub.
+2. **Two readers read.** `bakeoff-checker` (Claude Code) and `bakeoff-second` (OpenCode) each read every diff against the issue's Done-when list and record a verdict per item, with `file:line` evidence, through the Bakeoff MCP tools. Code, not the agents, marks where they agree, split or are still waiting.
+3. **People talk.** Maintainers and contributors ask and answer in the room. A reader can re-read and record a new verdict.
+4. **A maintainer picks.** `@bakeoff-merge pick #P`. The merge agent calls `merge_pick`; Switch shows an approval card in the room; a maintainer allows it once.
+5. **It lands on GitHub.** PR #P is merged with a comment naming who picked it. Every other PR gets a thank-you note listing what it missed, and is closed. The contest is decided once: a second pick is refused, with the name and time of the first.
+
+## How Bakeoff uses Switch
+
+| Switch feature | What it does in Bakeoff | Without it |
+|---|---|---|
+| Room templates, run by an agent | the watcher (bot agent `bakeoff-intake`) creates one room per contest from a YAML template, with its instructions, roles, members and a contest document | someone opens a channel and briefs the agents by hand, per issue |
+| Kickoff + addressing policy | the kickoff wakes both readers; they accept work from the intake bot, and the merge agent accepts instructions only from maintainers | anyone in the channel could tell the merge agent to merge |
+| Roles with exclusive leases | `checker`, `second-opinion` and `merger` each have one holder at a time | two agents doing the same job, or one agent doing both judging and merging |
+| Agents from different vendors in one room | Claude Code reads beside OpenCode; the matrix shows both columns and where they split | one model marking its own homework |
+| Approval cards | `merge_pick` is the one tool the merge agent may not run without a person: Switch posts "Allow once / Decline" in the room and records who answered | the agent merges on its own reading of the chat |
+| Slack bridge | the room is a Slack channel; agents post under their own names | another tool to open |
+
+Separation of duties is enforced in code as well: only the merge agent's MCP server has `merge_pick` (`BAKEOFF_ALLOW_MERGE=1`), the readers' servers do not, and each agent's name comes from its own environment, never from a tool argument.
+
+## What happens when it's wrong
+
+- **A PR says its tests pass and CI failed:** the cell stays red with "claims pass, CI failed", and `merge_pick` refuses a PR whose CI has not passed. Nobody in the room can overrule GitHub.
+- **The readers disagree:** the matrix marks the item SPLIT and the readers point the maintainer at it.
+- **Someone picks a decided contest:** refused, naming who decided and when; nothing is posted.
+- **Someone who isn't a maintainer tells the merge agent to merge:** Switch's addressing policy doesn't deliver it.
+- **GitHub refuses the merge:** the pick is undone and the contest stays open.
+- **A decline note fails to post:** the tool says which one; the pick stays recorded.
+
+## The demo contest
+
+Issue [#1](https://github.com/itssaharsh/bakeoff/issues/1) got four real pull requests, written by Claude Code, Kimi Code, Pi and OpenCode from the same prompt ([docs/demo-world.md](docs/demo-world.md)). They all pass CI and differ on the checklist and the scope, which is what the room reads for.
+
+## Run it yourself
+
+You need a Switch server with the agent controller (headless works: `just standalone-up` in the [Switch repo](https://github.com/sandbox-quantum/switch)), a messaging app connected to it (Slack, or the bundled Mattermost), `uv`, and a GitHub token with Contents, Pull requests and Issues read/write on the repository you watch.
+
+1. Create three agents on your Switch server: `bakeoff-checker` (Claude Code, auto mode), `bakeoff-second` (OpenCode) and `bakeoff-merge` (Claude Code, approvals required), and register a bot agent `bakeoff-intake` with `POST /agents/register-known`.
+2. On the machine that runs the agent controller: `git clone https://github.com/itssaharsh/bakeoff ~/bakeoff`, then run [`deploy/box-setup.sh`](deploy/box-setup.sh) with `INTAKE_AGENT_ID`, `BAKEOFF_MAINTAINER` (your username on the messaging app) and `BAKEOFF_REPOS`. It writes `~/bakeoff.env` and each agent's MCP and permission settings.
+3. `uv run python deploy/switch_admin.py policies` sets who may address whom.
+4. `systemctl --user enable --now bakeoff-watch`, or once: `uv run bakeoff watch OWNER/REPO --once`.
+5. Open two PRs that close the same issue. The room appears.
+
+`uv run bakeoff matrix OWNER/REPO ISSUE` prints the matrix in a terminal without Switch. `uv run pytest -q` runs the tests.
+
+## Layout
+
+| Path | What it is |
+|---|---|
+| `bakeoff/donewhen.py`, `bakeoff/matrix.py` | the checklist parser and the matrix (pure code) |
+| `bakeoff/github.py` | GitHub facts: linked PRs, CI, files, merge and comments |
+| `bakeoff/mcp_server.py`, `bakeoff/pick.py`, `bakeoff/state.py` | the agents' tools and the single-use pick |
+| `bakeoff/watch.py`, `bakeoff/switch_api.py` | the watcher that opens rooms through Switch's agent bridge |
+| `templates/bakeoff.room.yaml` | the Switch room template |
+| `deploy/` | box setup, MCP launcher, watcher unit, gateway admin helper |
+
+Apache-2.0.
