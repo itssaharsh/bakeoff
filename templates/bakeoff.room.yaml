@@ -103,3 +103,6 @@ kickoff: |
   3. record_readings for every PR and every item, with file:line evidence.
   4. Post your reading in at most 8 lines: per PR, what it misses. Then call contest_matrix
      again and point {maintainer} at any item where you and the other reader split.
+  5. Release your role when your reading is posted: an agent holds one role at a time across
+     all rooms, and the next contest needs it. If a role lease from another room blocks you,
+     release that one first.
