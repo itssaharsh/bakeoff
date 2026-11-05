@@ -3,12 +3,316 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bakeoff</title>
-<style>@media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } }</style>
+<title>Bakeoff – Pick the best PR for each issue</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #fafafa;
+  padding: 1.5rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #e8e8e8;
+    background: #0d0d0d;
+  }
+  a {
+    color: #5a9fd4;
+  }
+  a:visited {
+    color: #8b7ba8;
+  }
+  .step {
+    border-color: #333;
+  }
+  .step-number {
+    background: #2a2a2a;
+    color: #5a9fd4;
+  }
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 2.5rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+}
+
+.tagline {
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+@media (max-width: 480px) {
+  .tagline {
+    font-size: 1rem;
+  }
+}
+
+.problem {
+  background: rgba(100, 150, 255, 0.08);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2.5rem;
+  border-left: 4px solid #0066cc;
+}
+
+@media (prefers-color-scheme: dark) {
+  .problem {
+    background: rgba(90, 159, 212, 0.1);
+    border-left-color: #5a9fd4;
+  }
+}
+
+.problem p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.problem strong {
+  font-weight: 600;
+}
+
+section {
+  margin-bottom: 3rem;
+}
+
+section h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 480px) {
+  section h2 {
+    font-size: 1.25rem;
+  }
+}
+
+.steps {
+  display: grid;
+  gap: 1rem;
+}
+
+.step {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.step:hover {
+  border-color: #999;
+}
+
+@media (prefers-color-scheme: dark) {
+  .step:hover {
+    border-color: #666;
+  }
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 50%;
+  background: #f0f0f0;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0066cc;
+}
+
+.step-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.step-content p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+  .step {
+    padding: 1rem;
+  }
+  .step-number {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.quote-box {
+  background: rgba(0, 102, 204, 0.04);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  border-left: 4px solid #0066cc;
+}
+
+@media (prefers-color-scheme: dark) {
+  .quote-box {
+    background: rgba(90, 159, 212, 0.08);
+    border-left-color: #5a9fd4;
+  }
+}
+
+.quote-box p {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.7;
+  margin: 0;
+  font-style: italic;
+}
+
+footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+  footer {
+    border-top-color: #333;
+  }
+}
+
+.links {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.links a {
+  font-weight: 500;
+}
+
+.footer-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+</style>
 </head>
 <body>
-<h1>Bakeoff</h1>
-<p>When several pull requests fix one issue, Bakeoff opens a Switch room for that issue.</p>
-<p><a href="https://github.com/itssaharsh/bakeoff">GitHub</a></p>
+<div class="container">
+  <header>
+    <h1>Bakeoff</h1>
+    <p class="tagline">When several pull requests fix one issue, Bakeoff opens a Switch room for that issue</p>
+  </header>
+
+  <div class="problem">
+    <p>Coding agents make pull requests cheap. Reading five of them is not. Today, maintainers re-read every PR against the issue, over days, and contributors whose PRs lose usually get silence or a one-line close. Bakeoff turns that into one sitting in one chat room.</p>
+  </div>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Code opens the room</h3>
+          <p>Bakeoff sees two or more open PRs on the same issue and creates a contest room with a matrix: one column per PR, showing CI status and scope.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Two readers read</h3>
+          <p>Claude Code and OpenCode each read every diff against the issue's checklist and record verdicts with evidence. Code marks where they agree or split.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>People talk</h3>
+          <p>Maintainers and contributors ask questions and discuss in the room. Readers can re-read and update their verdicts with new evidence.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>A maintainer picks</h3>
+          <p>One named maintainer says which PR wins. Switch requires human approval. Code facts—not opinions—decide what passed.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h3>It lands on GitHub</h3>
+          <p>The winning PR merges with a note naming who picked it. Every other PR gets a thank-you listing what it missed, then closes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="quote-box">
+    <p>Code decides the facts, two readers decide the checklist, a maintainer decides the winner.</p>
+  </div>
+
+  <section>
+    <h2>Why this matters</h2>
+    <p>Bakeoff separates three decisions: what passes (code runs tests), what's complete (two independent agents read), and who wins (one named person). Nobody guesses. Contributors know why their PR didn't win. Maintainers get a written record of two independent readings. The contest is decided once.</p>
+  </section>
+
+  <footer>
+    <div class="links">
+      <a href="https://github.com/itssaharsh/bakeoff">GitHub Repository</a>
+      <a href="https://github.com/itssaharsh/bakeoff/issues/1">Demo Contest</a>
+    </div>
+    <div class="footer-note">
+      Built during the <a href="https://www.wemakedevs.org/hackathons/switch">Flip the Switch hackathon</a> (4–7 Nov 2026).
+    </div>
+  </footer>
+</div>
 </body>
 </html>
