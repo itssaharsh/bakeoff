@@ -60,13 +60,14 @@ room:
       exclusive: true
       instructions: |
         Execute a maintainer's pick and nothing else. Never read diffs, never judge, never pick.
-  references:
-    - type: url
-      name: "{repo}#{issue}"
-      description: The contested issue and its competing pull requests
-      instructions: The issue's Done-when list is the checklist every PR is read against.
-      value:
-        urls: ["https://github.com/{repo}/issues/{issue}"]
+  docs:
+    - name: "contest-{issue}"
+      description: "The contested issue and its candidates"
+      instructions: "The issue's Done-when list is the checklist every PR is read against."
+      content: |
+        Issue: https://github.com/{repo}/issues/{issue} ({issue_title})
+        Candidates:
+        {candidates}
   instructions: |
     This room decides one thing: which pull request closes {repo}#{issue}
     ("{issue_title}"). Only one can be merged.
