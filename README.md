@@ -4,9 +4,14 @@ When several pull requests fix one issue, Bakeoff opens a Switch room for it: tw
 
 > Code decides the facts, two readers decide the checklist, a maintainer decides the winner.
 
+## Demo
+
+- **Live landing page:** https://itssaharsh.github.io/bakeoff/ . Four agents designed it in a Bakeoff room (issue [#9](https://github.com/itssaharsh/bakeoff/issues/9), PRs #10-#13), friends weighed in on pictures of each design, the owner picked, and the merge deployed it to GitHub Pages.
+- **The contests are public:** [issue #1](https://github.com/itssaharsh/bakeoff/issues/1) and [issue #9](https://github.com/itssaharsh/bakeoff/issues/9).
+
 ![How a Bakeoff contest runs: GitHub PRs, the watcher and matrix, the Switch room with two readers, people, the merge agent and its approval card](docs/architecture.svg)
 
-Built during the [Flip the Switch hackathon](https://www.wemakedevs.org/hackathons/switch) (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026). Planning notes and the build plan were written first, inside the window.
+Built during the [Flip the Switch hackathon](https://www.wemakedevs.org/hackathons/switch) (WeMakeDevs × DevTools Academy × Switch, 4–7 Nov 2026).
 
 ## The problem
 
@@ -35,7 +40,7 @@ Bakeoff turns that into one sitting in one chat room: a matrix GitHub fills, two
 
 Separation of duties is enforced in code as well: the merge agent's MCP server exposes `merge_pick` and nothing else (`BAKEOFF_ALLOW_MERGE=1`), the readers' servers don't have it, and each agent's name comes from its own environment, never from a tool argument. The readers get no shell, file or web tools at all: a PR diff is untrusted text, and the only things they can do with it are read it and record verdicts.
 
-What the pick records: the name on the GitHub comment is the maintainer the merge agent says asked. The approval card shows that name before anything runs, and only people the merge agent's addressing policy admits can see their instructions delivered or answer its cards.
+What the pick records: the name on the GitHub comment is the maintainer the merge agent says asked. The approval card shows that name before anything runs, and the merge agent's addressing policy delivers instructions only from its owner and the maintainers listed in it.
 
 ## What happens when it's wrong
 
@@ -50,6 +55,22 @@ What the pick records: the name on the GitHub comment is the maintainer the merg
 ## The demo contest
 
 Issue [#1](https://github.com/itssaharsh/bakeoff/issues/1) got four real pull requests, written by Claude Code, Kimi Code, Pi and OpenCode from the same prompt ([docs/demo-world.md](docs/demo-world.md)). They all pass CI and differ on the checklist and the scope, which is what the room reads for.
+
+## What the room found
+
+On the rehearsal on 5 Nov, before the recorded run, the readers and the matrix gave this on contest #1:
+
+- All four PRs pass CI, so CI alone could not pick.
+- Pi's PR [#4](https://github.com/itssaharsh/bakeoff/pull/4) has a real bug: its command builds the matrix without the readers' verdicts, so it always reports 0 items met. It also adds two files outside the issue's scope.
+- The two readers split on two items of #4. Code marked them SPLIT and pointed the maintainer at them.
+- Claude's PR [#2](https://github.com/itssaharsh/bakeoff/pull/2) is the only one with a test for the exact error message and exit code.
+
+The same day, the small rehearsal contest #7 ran in Slack end to end: PR #6 was merged with a "Picked in Bakeoff" comment, #8 was closed with a note naming `README.md` as out of scope, and a second pick was refused. Switch's approval record shows I answered the card from Slack.
+
+In the recorded run on 6 Nov (the one in the video), in Slack with a teammate in the room:
+
+- **Contest #1:** both readers recorded 40 verdicts. Both marked Pi's PR #4 as missing item 5 (two extra files outside the scope). On item 1 they split: one reader found the `c.matrix([])` bug at `cli.py:37`, which makes the command always report 0 items met, the other marked it met, and the matrix showed SPLIT. #2, #3 and #5 met every item. My teammate asked the checker why #4 wasn't ready and got the file and line; then he told the merge agent to merge #4, and Switch didn't deliver it. I picked #2, allowed the card once, and GitHub got the merge with a "Picked in Bakeoff" comment; [#3](https://github.com/itssaharsh/bakeoff/pull/3), [#4](https://github.com/itssaharsh/bakeoff/pull/4) and [#5](https://github.com/itssaharsh/bakeoff/pull/5) were closed with notes. A second pick was refused: "This contest is already decided."
+- **Contest #9 (the landing page):** the room showed pictures of all four designs in light and dark, and the readers found all four met the brief's checklist, so the choice came down to taste. My teammate's view: "#13 looks the best to me, but #10 is easier to read on a phone." I picked [#10](https://github.com/itssaharsh/bakeoff/pull/10), and the merge deployed it to https://itssaharsh.github.io/bakeoff/.
 
 ## Run it yourself
 

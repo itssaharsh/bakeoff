@@ -36,3 +36,6 @@ storage_state*.json
 /post-draft.md
 /devto-post.md
 /first-user/
+
+# post drafts
+docs/social-post.md
