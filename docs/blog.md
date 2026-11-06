@@ -4,7 +4,7 @@
 
 ## The problem I picked
 
-During the Flip the Switch hackathon, Switch's own repository had 349 open pull requests, and its maintainer wrote: "Only one PR will be selected per issue." Coding agents made the PRs cheap. Reading five of them against one issue still costs a maintainer an evening, and the four people who lose usually hear nothing.
+During the Flip the Switch hackathon, Switch's own repository passed 390 open pull requests, and its maintainer wrote: "Only one PR will be selected per issue." Coding agents made the PRs cheap. Reading five of them against one issue still costs a maintainer an evening, and the four people who lose usually hear nothing.
 
 So I built Bakeoff. When two or more PRs say `Closes #N`, it opens a Switch room for issue N. GitHub's checks fill a matrix. Two agents read every diff against the issue's "Done when" list. A maintainer picks one, and Switch asks a person to approve before the merge agent acts. Then every other PR gets a note that names what it missed.
 

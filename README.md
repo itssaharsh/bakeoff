@@ -10,7 +10,7 @@ Built during the [Flip the Switch hackathon](https://www.wemakedevs.org/hackatho
 
 ## The problem
 
-During this hackathon, Switch's own repository had 349 open pull requests, many issues had five to ten people claiming them, and its maintainer wrote on 29 Oct: "Only one PR will be selected per issue" ([#816](https://github.com/sandbox-quantum/switch/issues/816)). Coding agents make a pull request cheap; reading five of them against one issue is not. Today the maintainer re-reads every PR against the issue, over days, and the people whose PRs lose usually get silence or a one-line close.
+During this hackathon, Switch's own repository grew from 349 open pull requests on 4 Nov to 398 on 6 Nov, many issues had five to ten people claiming them, and its maintainer wrote on 29 Oct: "Only one PR will be selected per issue" ([on #796 and other issues](https://github.com/sandbox-quantum/switch/issues/796#issuecomment-6492839294)). Coding agents make a pull request cheap; reading five of them against one issue is not. Today the maintainer re-reads every PR against the issue, over days, and the people whose PRs lose usually get silence or a one-line close.
 
 Bakeoff turns that into one sitting in one chat room: a matrix GitHub fills, two independent readings, questions to the contributors, a pick made by a named maintainer, one merge, and a note to every other contributor that names the checklist item their PR missed.
 
