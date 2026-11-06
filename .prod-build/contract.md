@@ -1,6 +1,6 @@
 # Implementation contract - bakeoff
 mode: hackathon | channel: direct | created: 2026-11-05
-Upstream read: hackathon-idea/flip-the-switch (ideas.json, idea-package.md, critic.md, critic-k2.md, judging-intel.md), Switch repo docs and code (sandbox-quantum/switch @186e9a4)
+Upstream read: the idea package written before the build (kept outside this repository), Switch repo docs and code (sandbox-quantum/switch @186e9a4)
 
 ## 1. Intent
 - User and moment of use: a maintainer when two or more pull requests compete to close the same issue (this hackathon's own Track 03 issue list: five to ten claimants per issue, "Only one PR will be selected per issue"). Personal mode: a person who asked several agents for the same thing (a homepage redesign) and wants friends' views before shipping one.
