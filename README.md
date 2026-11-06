@@ -93,6 +93,10 @@ You need a Switch server with the agent controller (headless works: `just standa
 - One role per agent across all rooms: two contests at once queue behind each other until a reader releases its role.
 - The demo PRs were written by coding agents from one prompt on my own repository; the room has not yet run on someone else's project.
 
+## Built by voice
+
+I dictated my prompts to the coding agent with [Wispr Flow](https://wisprflow.ai) throughout the build: 2,591 words and 35 AI prompts by the time of the recording, per my Wispr usage card. The video's narration is my own voice, taken from those same Wispr Flow dictations.
+
 ## Layout
 
 | Path | What it is |
