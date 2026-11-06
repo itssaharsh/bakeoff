@@ -242,9 +242,15 @@
         "observe: backup recording of a full contest run saved"
       ],
       "rollback": "git revert the T07 commit",
-      "status": "todo",
-      "notes": "",
-      "kind": "record"
+      "status": "done",
+      "notes": "[2026-11-06 start] closing with evidence after the recorded take",
+      "kind": "record",
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0032",
+        "E0038"
+      ]
     },
     {
       "id": "T08",
@@ -297,9 +303,15 @@
         "observe: demo flow ran three times in Slack with resets"
       ],
       "rollback": "git revert the T09 commit",
-      "status": "todo",
-      "notes": "",
-      "kind": "verify"
+      "status": "done",
+      "notes": "[2026-11-06 start] closing with evidence after the recorded take",
+      "kind": "verify",
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0033",
+        "E0039"
+      ]
     },
     {
       "id": "T10",
@@ -320,11 +332,15 @@
         "observe: picked homepage live on GitHub Pages after approval"
       ],
       "rollback": "git revert the T10 commit",
-      "status": "doing",
-      "notes": "[2026-11-05 start] T06's last check (a human approving the merge card) waits on the builder's Slack setup; T10's build work does not depend on it",
+      "status": "done",
+      "notes": "[2026-11-05 start] T06's last check (a human approving the merge card) waits on the builder's Slack setup; T10's build work does not depend on it\n[2026-11-06 start] closing with evidence after the recorded take",
       "size": "M",
-      "base": "1aba23f",
-      "started_after": 21
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0034",
+        "E0040"
+      ]
     },
     {
       "id": "T11",
@@ -371,10 +387,15 @@
         "observe: README read top to bottom against a clean clone"
       ],
       "rollback": "git revert the T12 commit",
-      "status": "todo",
-      "notes": "",
+      "status": "done",
+      "notes": "[2026-11-06 start] closing with evidence after the recorded take",
       "kind": "docs",
-      "suite": false
+      "suite": false,
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0035"
+      ]
     },
     {
       "id": "T13",
@@ -431,10 +452,16 @@
         "manual: xoxb token in SSM /switch-demo/slack-bot-token and workspace id given"
       ],
       "rollback": "n/a",
-      "status": "todo",
-      "notes": "",
+      "status": "done",
+      "notes": "[2026-11-06 start] closing with evidence after the recorded take",
       "owner": "builder",
-      "due": "2026-11-05T18:00:00Z"
+      "due": "2026-11-05T18:00:00Z",
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0036",
+        "E0041"
+      ]
     },
     {
       "id": "T16",
@@ -451,10 +478,16 @@
         "manual: 2-3 friends joined Slack and booked a 30 min slot"
       ],
       "rollback": "n/a",
-      "status": "todo",
-      "notes": "",
+      "status": "done",
+      "notes": "[2026-11-06 start] closing with evidence after the recorded take",
       "owner": "builder",
-      "due": "2026-11-06T14:00:00Z"
+      "due": "2026-11-06T14:00:00Z",
+      "base": "509bc21",
+      "started_after": 31,
+      "evidence": [
+        "E0037",
+        "E0042"
+      ]
     },
     {
       "id": "T17",
