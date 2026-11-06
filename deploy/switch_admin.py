@@ -150,8 +150,13 @@ def cmd_instruct(c, a):
 
 
 def cmd_archive(c, a):
+    """Archive rooms; with --suffix, rename them first (Slack keeps an archived channel's name taken)."""
     for room in a.rooms:
-        print(room, c.post(f"/rooms/{room}/archive").status_code)
+        if a.suffix:
+            name = c.get(f"/rooms/{room}").json().get("name", room)
+            r = c.patch(f"/rooms/{room}", json={"name": f"{name}-{a.suffix}"})
+            print(room, "rename", r.status_code, c.post(f"/rooms/{room}/sync-name").status_code)
+        print(room, "archive", c.post(f"/rooms/{room}/archive").status_code)
 
 
 def cmd_approvals(c, a):
@@ -176,7 +181,7 @@ def main():
     sub.add_parser("approvals")
     p = sub.add_parser("slack"); p.add_argument("--name", default="Slack"); p.add_argument("--workspace", default="")
     p = sub.add_parser("users"); p.add_argument("--bridge", default="")
-    p = sub.add_parser("archive"); p.add_argument("rooms", nargs="+")
+    p = sub.add_parser("archive"); p.add_argument("rooms", nargs="+"); p.add_argument("--suffix", default="")
     sub.add_parser("instruct")
     p = sub.add_parser("answer")
     for k in ("agent", "session", "request", "option"):
