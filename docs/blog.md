@@ -1,4 +1,4 @@
-# I ran a headless Switch on a cloud box and let it pick one pull request out of five
+# I ran Switch headless on a cloud box so my team could pick one pull request out of four
 
 *Notes from setting up Switch for the first time: a Docker Compose server on a small cloud box, three agents with three jobs, and a Slack room that decides which pull request gets merged.*
 
@@ -9,6 +9,8 @@ During the Flip the Switch hackathon, Switch's own repository grew to nearly 400
 So I built Bakeoff. When two or more PRs say `Closes #N`, it opens a Switch room for issue N. GitHub's checks fill a matrix. Two agents from different vendors read every diff against the issue's "Done when" list. A maintainer picks one, a person approves the merge on a card in the room, and every other PR gets a note naming the checklist item it missed.
 
 This post is the Switch part: what a first-time user needs, and the snags I hit.
+
+![How a Bakeoff contest runs: GitHub PRs, the watcher and matrix, the Switch room with two readers, people, the merge agent and its approval card](https://raw.githubusercontent.com/itssaharsh/bakeoff/main/docs/architecture.png)
 
 ## Six Switch terms, in one paragraph
 
@@ -77,4 +79,4 @@ In the recorded run both readers flagged Pi's two extra files, and they split on
 
 ## Try it
 
-The repo has the room template, the MCP tools and the setup scripts: https://github.com/itssaharsh/bakeoff. `uv run bakeoff matrix OWNER/REPO ISSUE` prints a contest matrix in a terminal without Switch.
+The repo has the room template, the MCP tools and the setup scripts: https://github.com/itssaharsh/bakeoff. Built for the WeMakeDevs × DevTools Academy × Switch "Flip the Switch" hackathon, November 2026. `uv run bakeoff matrix OWNER/REPO ISSUE` prints a contest matrix in a terminal without Switch.
