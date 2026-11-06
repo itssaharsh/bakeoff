@@ -28,7 +28,11 @@
       "source": "https://www.wemakedevs.org/hackathons/switch",
       "dq": true,
       "kind": "attest",
-      "added": "2026-11-05T14:24:05Z"
+      "added": "2026-11-05T14:24:05Z",
+      "confirmed": {
+        "evidence": "pb.py window: first commit 0391c94 at 2026-11-05T14:26:33Z, inside the window (start 2026-11-03T18:31Z); Switch server, agents and every room created 2026-11-05 (gateway rooms list, created column); no code copied from before the start",
+        "at": "2026-11-06T09:06:37Z"
+      }
     },
     {
       "id": "video-3min",

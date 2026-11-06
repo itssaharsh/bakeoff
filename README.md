@@ -1,6 +1,6 @@
 # Bakeoff
 
-When several pull requests fix one issue, Bakeoff opens a Switch room for that issue: two agents from different vendors check every PR against the issue's own checklist, GitHub's CI decides what passed, and one maintainer picks the winner by name before anything is posted.
+When several pull requests fix one issue, Bakeoff opens a Switch room for it: two agents check each PR against the issue's checklist, GitHub's CI decides what passed, and a maintainer picks the winner by name.
 
 > Code decides the facts, two readers decide the checklist, a maintainer decides the winner.
 
@@ -62,6 +62,14 @@ You need a Switch server with the agent controller (headless works: `just standa
 5. Open two PRs that close the same issue. The room appears.
 
 `uv run bakeoff matrix OWNER/REPO ISSUE` prints the matrix in a terminal without Switch. `uv run pytest -q` runs the tests.
+
+## Limits
+
+- The name on a pick is the maintainer the merge agent says asked. Switch's approval card shows it before anything runs and records who answered, but `merge_pick` does not read that record yet.
+- The readers' verdicts are model judgements: they cite file and line, the two readers can disagree, and code shows where they split. Only CI, scope and tests touched are decided by code.
+- The watcher polls GitHub every 30 seconds; there is no webhook yet. PRs with more than 100 check runs or files are only partly read.
+- One role per agent across all rooms: two contests at once queue behind each other until a reader releases its role.
+- The demo PRs were written by coding agents from one prompt on my own repository; the room has not yet run on someone else's project.
 
 ## Layout
 
