@@ -3,12 +3,565 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bakeoff</title>
-<style>@media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } }</style>
+<title>Bakeoff: one Switch room per contested issue</title>
+<meta name="description" content="When several pull requests fix one issue, Bakeoff opens a Switch room for that issue: two agents from different vendors check every PR against the issue's checklist, GitHub's CI decides what passed, and a maintainer picks the winner.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f3f5fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1631" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 54'%3E%3Cpath d='M12 26l7.5 4-4 23-3.5-4-4.5 2.5z' fill='%231b3486'/%3E%3Cpath d='M28 26l-7.5 4 4 23 3.5-4 4.5 2.5z' fill='%232547b5'/%3E%3Ccircle cx='20' cy='19' r='18' fill='%23e3a71b'/%3E%3Ccircle cx='20' cy='19' r='11' fill='%232547b5'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f3f5fa;
+  --ink: #172140;
+  --muted: #56617e;
+  --rule: #d3d9e8;
+  --card: #ffffff;
+  --frame: #2547b5;
+  --ribbon: #2547b5;
+  --ribbon-deep: #1b3486;
+  --ribbon-ink: #ffffff;
+  --gold: #e3a71b;
+  --gold-soft: #fff4d6;
+  --no: #b3261e;
+  --split-ink: #7f4b00;
+  --split-bg: #fbe8c2;
+  --wait: #7d87a3;
+  --hi: #e6ecfb;
+  --ring: #c3d0f5;
+  --chip: #e4e9f5;
+  --shadow: rgba(23, 33, 64, .42);
+  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1631;
+    --ink: #e5e9f5;
+    --muted: #a3adcc;
+    --rule: #2a3863;
+    --card: #141e40;
+    --frame: #4c66c9;
+    --ribbon: #9ab0ff;
+    --ribbon-deep: #c2d0ff;
+    --ribbon-ink: #0e1631;
+    --gold: #f0be4a;
+    --gold-soft: #3a3119;
+    --no: #ff8f84;
+    --split-ink: #f7c873;
+    --split-bg: #3d2d0b;
+    --wait: #7f8aac;
+    --hi: #1a2652;
+    --ring: #3a4d8c;
+    --chip: #1c2850;
+    --shadow: rgba(0, 0, 0, .6);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1.125rem/1.6 var(--serif);
+  font-kerning: normal;
+  overflow-wrap: break-word;
+}
+a { color: var(--ribbon); text-decoration-thickness: 1px; text-underline-offset: .18em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--ribbon); outline-offset: 3px; border-radius: 3px; }
+code, pre { font-family: var(--mono); font-size: .86em; }
+code { white-space: nowrap; }
+pre code { white-space: pre; }
+p code, .d code, dd code, h3 code { background: var(--chip); padding: .06em .3em; border-radius: 3px; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { max-width: 74rem; margin-left: auto; margin-right: auto; padding: 0 1.5rem; }
+
+/* Hero */
+.hero { padding-top: 3rem; }
+.name {
+  display: flex; align-items: center; gap: .55rem; margin: 0;
+  font: 700 1.75rem/1 var(--serif); letter-spacing: -.01em;
+}
+.name svg { width: 1.85rem; height: 2.5rem; flex: none; }
+.lede {
+  margin: 2.5rem 0 0; max-width: 20.5em;
+  font-size: clamp(2.125rem, 1.1rem + 3.6vw, 3.5rem); line-height: 1.07; letter-spacing: -.02em;
+  text-wrap: balance;
+}
+.sub { margin: 1.75rem 0 0; max-width: 34em; font-size: 1.25rem; line-height: 1.55; color: var(--muted); }
+.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 2rem; }
+.btn {
+  display: inline-block; padding: .8rem 1.25rem; border-radius: 4px;
+  background: var(--ribbon); color: var(--ribbon-ink);
+  font: 600 1rem/1.2 var(--sans); text-decoration: none;
+}
+.btn:hover { background: var(--ribbon-deep); }
+.cta .plain { font: 600 1rem/1.2 var(--sans); }
+
+/* Sections */
+section { margin-top: 6.5rem; }
+section.first { margin-top: 4.5rem; }
+h2 { margin: 0; font: 700 clamp(1.75rem, 1.3rem + 1.4vw, 2.25rem)/1.15 var(--serif); letter-spacing: -.012em; }
+.intro { margin: .9rem 0 0; max-width: 36em; font-size: 1.1875rem; color: var(--muted); }
+
+/* How a contest runs: the steps */
+.contest { display: grid; gap: 2.5rem; margin-top: 2.5rem; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { position: relative; }
+.steps li:not(:last-child)::after {
+  content: ""; position: absolute; left: 1.6rem; top: 3.3rem; bottom: -.55rem;
+  width: 2px; margin-left: -1px; background: var(--rule);
+}
+.step {
+  display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); column-gap: 1rem;
+  width: 100%; margin: 0; padding: .85rem .75rem .95rem .5rem;
+  border: 0; border-radius: 6px; background: none; color: inherit; font: inherit; text-align: left;
+}
+.anim .step { cursor: pointer; }
+.anim .step:hover, .step[aria-current] { background: var(--hi); }
+.n {
+  grid-row: span 2; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 2px solid var(--ribbon); background: var(--ribbon); color: var(--ribbon-ink);
+  font: 700 .9375rem/1 var(--sans);
+  transition: background-color .3s, color .3s;
+}
+.anim .step:not(.lit) .n { background: var(--bg); color: var(--ribbon); }
+.t { padding-top: .3rem; font: 700 1.3125rem/1.25 var(--serif); }
+.d { margin-top: .3rem; font-size: 1rem; line-height: 1.55; color: var(--muted); }
+.hint { margin: .75rem 0 0 .5rem; font: 400 .875rem/1.4 var(--sans); color: var(--muted); }
+
+/* The example room */
+.room {
+  margin: 0; padding: 5px; border: 1px solid var(--frame); border-radius: 3px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 5px var(--frame), 0 24px 50px -32px var(--shadow);
+  font: 400 .9375rem/1.4 var(--sans);
+}
+.room-head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem;
+  padding: .95rem 1.1rem .85rem; border-bottom: 1px solid var(--rule);
+}
+.room-name { display: block; font-weight: 700; font-size: 1rem; }
+.room-sub { display: block; margin-top: .1rem; font-size: .8125rem; color: var(--muted); }
+.again {
+  padding: .45rem .7rem; border: 1px solid var(--rule); border-radius: 4px;
+  background: none; color: var(--ribbon); font: 600 .8125rem/1 var(--sans); cursor: pointer;
+}
+.again:hover { border-color: var(--ribbon); }
+
+.matrix { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.matrix col.lab { width: 46%; }
+.matrix col.win { transition: background-color .5s; }
+.room.picked col.win { background: var(--gold-soft); }
+.matrix th, .matrix td { padding: .42rem .45rem; text-align: center; vertical-align: middle; }
+.matrix thead th { padding-top: .85rem; font-size: .9375rem; font-weight: 700; white-space: nowrap; }
+.matrix tbody th { text-align: left; font-weight: 400; }
+.matrix tbody th code { font-size: .82em; }
+.matrix tr.grp th { padding: 1rem .45rem .4rem; font-size: .8125rem; font-weight: 600; color: var(--muted); }
+.matrix tbody tr:not(.grp) { border-top: 1px solid var(--rule); }
+.matrix tr.ready { border-top: 2px solid var(--ink); }
+.matrix tr.ready th { font-weight: 700; }
+.stack { display: inline-grid; justify-items: center; vertical-align: middle; }
+.stack > * { grid-area: 1 / 1; }
+.stack.l { justify-items: start; }
+.v { display: inline-block; min-width: 2.9rem; padding: .14rem .35rem; border-radius: 3px; font-size: .875rem; font-weight: 600; line-height: 1.3; }
+.ok { color: var(--ribbon); }
+.bad { color: var(--no); font-weight: 700; }
+.split { background: var(--split-bg); color: var(--split-ink); font-weight: 700; }
+.wait { color: var(--wait); font-weight: 500; }
+.medal { width: 1.05rem; height: 1.4rem; margin-left: .2rem; vertical-align: -.35rem; }
+.notes { margin: 0; padding: .55rem 1.1rem .85rem; font-size: .8125rem; color: var(--muted); }
+.notes span { display: block; }
+
+.pin {
+  display: inline-grid; place-items: center; flex: none;
+  width: 1.375rem; height: 1.375rem; border-radius: 50%;
+  background: var(--ribbon); color: var(--ribbon-ink);
+  font: 700 .75rem/1 var(--sans); vertical-align: middle;
+  transition: background-color .3s, color .3s, box-shadow .3s;
+}
+.grp .pin { margin-right: .55rem; }
+.room.anim .pin:not(.lit) { background: transparent; color: var(--ribbon); box-shadow: inset 0 0 0 1.5px var(--ribbon); }
+.room .pin.cur { box-shadow: 0 0 0 4px var(--ring); }
+
+.part {
+  display: grid; grid-template-columns: 1.375rem minmax(0, 1fr); column-gap: .75rem;
+  padding: .9rem 1.1rem 1rem; border-top: 1px solid var(--rule);
+}
+.part > .pin { grid-area: 1 / 1; }
+.part > h3 { grid-area: 1 / 2; align-self: center; margin: 0; font-size: .8125rem; font-weight: 600; color: var(--muted); }
+.part > .body { grid-area: 2 / 2; }
+.msg { margin: .45rem 0 0; }
+.msg b { font-weight: 700; }
+.role { margin-left: .35rem; font-size: .75rem; color: var(--muted); }
+.msg .text { display: block; }
+.msg code { font-size: .86em; }
+.approve {
+  margin-top: .6rem; padding: .7rem .8rem;
+  border: 1px solid var(--rule); border-left: 3px solid var(--gold); border-radius: 4px;
+  background: var(--bg);
+}
+.approve p { margin: 0; }
+.approve .stack { margin-top: .55rem; }
+.fake {
+  display: inline-block; margin-right: .35rem; padding: .3rem .7rem;
+  border: 1px solid var(--ribbon); border-radius: 4px; color: var(--ribbon);
+  font-size: .8125rem; font-weight: 600;
+}
+.fake.go { background: var(--ribbon); color: var(--ribbon-ink); }
+.allowed { padding: .3rem 0; font-weight: 600; }
+.gh { list-style: none; margin: .25rem 0 0; padding: 0; }
+.gh li { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: .5rem; padding: .3rem 0; }
+.gh .pr { font-weight: 700; }
+.tag { display: inline-block; margin-right: .3rem; padding: .08rem .4rem; border-radius: 3px; font-size: .75rem; font-weight: 700; }
+.tag.m { background: var(--ribbon); color: var(--ribbon-ink); }
+.tag.c { box-shadow: inset 0 0 0 1px var(--wait); color: var(--muted); }
+
+/* Animation states: without the script every final state shows and in-between states stay hidden. */
+.room [data-until] { visibility: hidden; opacity: 0; }
+.room.anim [data-from], .room.anim [data-until] { visibility: hidden; opacity: 0; transition: opacity .3s ease, visibility 0s linear .3s; }
+.room.anim .on { visibility: visible; opacity: 1; transition: opacity .35s ease; }
+.room.anim .medal { transform: translateY(-.4rem) scale(.5) rotate(-24deg); }
+.room.anim .medal.on { transform: none; transition: opacity .3s ease, transform .55s cubic-bezier(.3, 1.6, .5, 1); }
+
+/* Why */
+.why { display: grid; gap: 2rem 4rem; margin-top: 2rem; }
+.q { margin: 0; }
+.q blockquote { margin: 0; }
+.q p { margin: 0; font: italic 400 clamp(1.875rem, 1.2rem + 2.2vw, 2.75rem)/1.12 var(--serif); letter-spacing: -.012em; text-indent: -.4em; }
+.q figcaption { margin-top: 1rem; font: 400 .9375rem/1.45 var(--sans); color: var(--muted); }
+.why-text p { margin: 0 0 1rem; max-width: 34em; }
+
+/* When it goes wrong */
+.wrong { display: grid; gap: 0 3rem; margin: 2.25rem 0 0; }
+.wrong div { padding: 1.2rem 0 1.4rem; border-top: 1px solid var(--rule); }
+.wrong dt { font-weight: 700; line-height: 1.35; }
+.wrong dd { margin: .4rem 0 0; font-size: 1rem; line-height: 1.55; color: var(--muted); }
+
+/* What Switch does here */
+.uses { margin: 2.25rem 0 0; }
+.uses div { display: grid; gap: .25rem 2rem; padding: 1rem 0; border-top: 1px solid var(--rule); }
+.uses dt { font: 600 1rem/1.45 var(--sans); }
+.uses dd { margin: 0; max-width: 40em; font-size: 1rem; line-height: 1.55; color: var(--muted); }
+
+/* See it or run it */
+.try { display: grid; gap: 2.5rem 4rem; margin-top: 2.25rem; }
+.try h3 { margin: 0; font: 700 1.3125rem/1.25 var(--serif); }
+.try p { margin: .6rem 0 0; max-width: 34em; }
+pre { margin: .6rem 0 0; padding: .75rem .9rem; overflow-x: auto; border-radius: 4px; background: var(--chip); font-size: .875rem; line-height: 1.5; }
+.try .go { display: inline-block; margin-top: 1rem; font: 600 1rem/1.3 var(--sans); }
+
+.foot { margin-top: 6.5rem; padding: 1.75rem 0 2.75rem; border-top: 1px solid var(--rule); font: 400 .875rem/1.6 var(--sans); color: var(--muted); }
+.foot p { margin: 0; max-width: 46em; }
+.foot p + p { margin-top: .4rem; }
+
+@media (min-width: 46rem) {
+  .wrong { grid-template-columns: 1fr 1fr; }
+  .uses div { grid-template-columns: 15rem minmax(0, 1fr); }
+}
+@media (min-width: 52rem) {
+  .try { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 62rem) {
+  .contest { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 4rem; align-items: start; }
+  .steps-col { position: sticky; top: 1.5rem; }
+  .why { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+}
+@media (min-width: 70rem) {
+  .wrong { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 40rem) {
+  .wrap { padding: 0 1rem; }
+  .hero { padding-top: 2rem; }
+  .lede { margin-top: 1.75rem; }
+  .sub { font-size: 1.125rem; }
+  section { margin-top: 4.5rem; }
+  .room { font-size: .875rem; }
+  .room-head, .notes { padding-left: .8rem; padding-right: .8rem; }
+  .part { padding-left: .8rem; padding-right: .8rem; column-gap: .6rem; }
+  .matrix th, .matrix td { padding: .4rem .25rem; }
+  .matrix tr.grp th { padding-left: .55rem; }
+  .matrix tbody th { padding-left: .55rem; }
+  .matrix thead th:first-child { padding-left: .55rem; }
+  .v { min-width: 2.5rem; padding: .12rem .2rem; font-size: .8125rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+@media print {
+  .room [data-from] { visibility: visible !important; opacity: 1 !important; }
+  .room [data-until], .again, .hint { display: none !important; }
+}
+</style>
 </head>
 <body>
-<h1>Bakeoff</h1>
-<p>When several pull requests fix one issue, Bakeoff opens a Switch room for that issue.</p>
-<p><a href="https://github.com/itssaharsh/bakeoff">GitHub</a></p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="rosette" viewBox="0 0 40 54">
+    <path d="M12 26l7.5 4-4 23-3.5-4-4.5 2.5z" style="fill:var(--ribbon-deep)"/>
+    <path d="M28 26l-7.5 4 4 23 3.5-4 4.5 2.5z" style="fill:var(--ribbon)"/>
+    <polygon style="fill:var(--gold)" points="20.0,0.5 22.2,3.6 25.2,1.2 26.5,4.8 30.0,3.4 30.2,7.2 34.0,6.9 33.1,10.6 36.8,11.3 35.0,14.6 38.3,16.4 35.6,19.0 38.3,21.6 35.0,23.4 36.8,26.7 33.1,27.4 34.0,31.1 30.2,30.8 30.0,34.6 26.5,33.2 25.2,36.8 22.2,34.4 20.0,37.5 17.8,34.4 14.8,36.8 13.5,33.2 10.0,34.6 9.8,30.8 6.0,31.1 6.9,27.4 3.2,26.7 5.0,23.4 1.7,21.6 4.4,19.0 1.7,16.4 5.0,14.6 3.2,11.3 6.9,10.6 6.0,6.9 9.8,7.2 10.0,3.4 13.5,4.8 14.8,1.2 17.8,3.6"/>
+    <circle cx="20" cy="19" r="11" style="fill:var(--ribbon)"/>
+    <circle cx="20" cy="19" r="8" style="fill:none;stroke:var(--gold);stroke-width:1;opacity:.7"/>
+  </symbol>
+</svg>
+
+<header class="hero wrap">
+  <h1 class="name"><svg aria-hidden="true" focusable="false"><use href="#rosette"/></svg>Bakeoff</h1>
+  <p class="lede">When several pull requests fix one issue, Bakeoff opens a Switch room for that issue.</p>
+  <p class="sub">Two agents from different vendors check every PR against the issue’s own checklist, GitHub’s CI decides what passed, and one maintainer picks the winner by name before anything is posted.</p>
+  <p class="cta">
+    <a class="btn" href="https://github.com/itssaharsh/bakeoff/issues/1">See the demo contest</a>
+    <a class="plain" href="https://github.com/itssaharsh/bakeoff">Read the code on GitHub</a>
+  </p>
+</header>
+
+<main>
+<section class="wrap first" aria-labelledby="how">
+  <h2 id="how">How a contest runs</h2>
+  <p class="intro">Code decides the facts, two readers decide the checklist, a maintainer decides the winner.</p>
+
+  <div class="contest">
+    <div class="steps-col">
+      <ol class="steps" id="steps">
+        <li><button type="button" class="step"><span class="n">1</span><span class="t">Code opens the room</span><span class="d">The watcher sees two or more open PRs that say <code>Closes #12</code>, opens the Switch room bakeoff-12 from a template and posts the matrix: CI, tests and scope, straight from GitHub.</span></button></li>
+        <li><button type="button" class="step"><span class="n">2</span><span class="t">Two readers read</span><span class="d">Claude Code and OpenCode each read every diff against the issue’s Done-when list and record a verdict per item, with <code>file:line</code> evidence. Code marks where they agree, split or are still waiting.</span></button></li>
+        <li><button type="button" class="step"><span class="n">3</span><span class="t">People talk</span><span class="d">Maintainers and contributors ask and answer in the room. A reader can re-read and record a new verdict.</span></button></li>
+        <li><button type="button" class="step"><span class="n">4</span><span class="t">A maintainer picks</span><span class="d">A maintainer types <code>@bakeoff-merge pick #13</code>. Switch shows an approval card in the room, and a maintainer allows it once.</span></button></li>
+        <li><button type="button" class="step"><span class="n">5</span><span class="t">It lands on GitHub</span><span class="d">#13 is merged with a comment naming who picked it. #14 and #15 each get a thank-you note listing what they missed, and are closed.</span></button></li>
+      </ol>
+      <p class="hint" id="hint" hidden>Select a step to see the room at that point.</p>
+    </div>
+
+    <figure class="room picked" id="room">
+      <figcaption class="room-head">
+        <span><span class="room-name">bakeoff-12</span><span class="room-sub">Example room. Issue #12: add a <code>--json</code> flag to export</span></span>
+        <button type="button" class="again" id="again" hidden>Play it again</button>
+      </figcaption>
+
+      <table class="matrix">
+        <caption class="sr">Example contest matrix for issue 12, three pull requests</caption>
+        <colgroup><col class="lab"><col class="win"><col><col></colgroup>
+        <thead>
+          <tr><th scope="col"><span class="sr">Check</span></th><th scope="col">#13<svg class="medal" data-from="7" role="img" aria-label="picked"><use href="#rosette"/></svg></th><th scope="col">#14</th><th scope="col">#15</th></tr>
+        </thead>
+        <tbody data-region="1">
+          <tr class="grp"><th colspan="4" scope="colgroup"><span class="pin" data-pin="1">1</span>From GitHub</th></tr>
+          <tr><th scope="row">CI</th>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">pass</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v bad" data-from="1">FAIL*</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">pass</span></span></td></tr>
+          <tr><th scope="row">Tests touched</th>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">yes</span></span></td></tr>
+          <tr><th scope="row">Files outside scope</th>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">0</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v ok" data-from="1">0</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="1">–</span><span class="v bad" data-from="1">2</span></span></td></tr>
+        </tbody>
+        <tbody data-region="2">
+          <tr class="grp"><th colspan="4" scope="colgroup"><span class="pin" data-pin="2">2</span>From two readers, Claude Code and OpenCode</th></tr>
+          <tr><th scope="row">1. Prints JSON with <code>--json</code></th>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td></tr>
+          <tr><th scope="row">2. Default output unchanged</th>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v bad" data-from="3">NO</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td></tr>
+          <tr><th scope="row">3. <code>--help</code> lists the flag</th>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v split" data-from="3" data-until="5">SPLIT</span><span class="v ok" data-from="5">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v bad" data-from="3">NO</span></span></td></tr>
+          <tr><th scope="row">4. Tests the JSON shape</th>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="2">–</span><span class="v wait" data-from="2" data-until="3">1/2</span><span class="v ok" data-from="3">yes</span></span></td></tr>
+        </tbody>
+        <tbody>
+          <tr class="ready"><th scope="row">Ready to pick</th>
+            <td><span class="stack"><span class="v wait" data-until="3">–</span><span class="v wait" data-from="3" data-until="5">no</span><span class="v ok" data-from="5">YES</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="3">–</span><span class="v wait" data-from="3">no</span></span></td>
+            <td><span class="stack"><span class="v wait" data-until="3">–</span><span class="v wait" data-from="3">no</span></span></td></tr>
+        </tbody>
+      </table>
+      <p class="notes"><span data-from="1">* #14 says its tests pass; GitHub’s CI failed.</span><span>1/2: one reader has read it. SPLIT: the readers disagree.</span></p>
+
+      <div class="part" data-region="3">
+        <span class="pin" data-pin="3">3</span>
+        <h3>The room talks</h3>
+        <div class="body">
+          <p class="msg" data-from="4"><b>dana</b><span class="role">maintainer</span><span class="text">#13, item 3: where does <code>--help</code> list the flag?</span></p>
+          <p class="msg" data-from="4"><b>mira</b><span class="role">wrote #13</span><span class="text">cli.py:41, in the help text of the <code>--json</code> option.</span></p>
+          <p class="msg" data-from="5"><b>bakeoff-second</b><span class="role">reader, OpenCode</span><span class="text">Re-read #13, item 3: met.</span></p>
+        </div>
+      </div>
+
+      <div class="part" data-region="4">
+        <span class="pin" data-pin="4">4</span>
+        <h3>The pick</h3>
+        <div class="body">
+          <p class="msg" data-from="6"><b>dana</b><span class="role">maintainer</span><span class="text"><code>@bakeoff-merge pick #13</code></span></p>
+          <div class="approve" data-from="6">
+            <p><b>bakeoff-merge</b> wants to run <code>merge_pick</code> for #13.</p>
+            <span class="stack l">
+              <span data-from="6" data-until="7"><span class="fake go">Allow once</span><span class="fake">Decline</span></span>
+              <span class="allowed" data-from="7">Allowed once by dana</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="part" data-region="5">
+        <span class="pin" data-pin="5">5</span>
+        <h3>On GitHub</h3>
+        <div class="body">
+          <ul class="gh" data-from="8">
+            <li><span class="pr">#13</span><span><span class="tag m">Merged</span>with a comment: picked by dana in bakeoff-12.</span></li>
+            <li><span class="pr">#14</span><span><span class="tag c">Closed</span>with a thank-you note: CI failed; item 2 not met.</span></li>
+            <li><span class="pr">#15</span><span><span class="tag c">Closed</span>with a thank-you note: item 3 not met; 2 files outside scope.</span></li>
+          </ul>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap" aria-labelledby="why">
+  <h2 id="why">Why it exists</h2>
+  <div class="why">
+    <figure class="q">
+      <blockquote><p>“Only one PR will be selected per issue.”</p></blockquote>
+      <figcaption>Switch’s maintainer, 29 Oct 2026, in <a href="https://github.com/sandbox-quantum/switch/issues/816">issue #816</a></figcaption>
+    </figure>
+    <div class="why-text">
+      <p>During this hackathon, Switch’s own repository had 349 open pull requests, and many issues had five to ten people claiming them. Coding agents make a pull request cheap. Reading five of them against one issue is not.</p>
+      <p>Today a maintainer re-reads every PR against the issue, over days, and the people whose PRs lose usually get silence or a one-line close. Bakeoff turns that into one sitting in one room, and every PR that loses gets a note naming the checklist item it missed.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" aria-labelledby="wrong">
+  <h2 id="wrong">When it goes wrong</h2>
+  <p class="intro">The rules that matter live in code and in Switch’s settings, so an agent can’t talk its way past them.</p>
+  <dl class="wrong">
+    <div><dt>A PR says its tests pass, and CI failed</dt><dd>The cell stays red with “claims pass, CI failed”, and <code>merge_pick</code> refuses a PR whose CI hasn’t passed. Nobody in the room can overrule GitHub.</dd></div>
+    <div><dt>The readers disagree</dt><dd>The matrix marks the item SPLIT, and the readers point the maintainer at it.</dd></div>
+    <div><dt>Someone picks a decided contest</dt><dd>Refused, naming who decided and when. Nothing is posted.</dd></div>
+    <div><dt>Someone who isn’t a maintainer tells the merge agent to merge</dt><dd>Switch’s addressing policy doesn’t deliver the message.</dd></div>
+    <div><dt>GitHub refuses the merge</dt><dd>The pick is undone and the contest stays open.</dd></div>
+    <div><dt>A decline note fails to post</dt><dd>The tool says which one, and the pick stays recorded.</dd></div>
+  </dl>
+</section>
+
+<section class="wrap" aria-labelledby="switch">
+  <h2 id="switch">What Switch does here</h2>
+  <p class="intro">Each part of a contest leans on one Switch feature. Only the merge agent’s tools can merge, and each agent’s name comes from its own environment, never from a tool argument.</p>
+  <dl class="uses">
+    <div><dt>Room templates</dt><dd>The watcher opens one room per contest from a YAML template, with its instructions, roles, members and a contest document.</dd></div>
+    <div><dt>Kickoff and addressing policy</dt><dd>The kickoff wakes both readers. The merge agent takes instructions only from maintainers.</dd></div>
+    <div><dt>Roles with exclusive leases</dt><dd>Checker, second opinion and merger each have one holder at a time, so no agent both judges and merges.</dd></div>
+    <div><dt>Agents from different vendors</dt><dd>Claude Code reads beside OpenCode, and the matrix shows where they split, so no model marks its own homework.</dd></div>
+    <div><dt>Approval cards</dt><dd><code>merge_pick</code> is the one tool the merge agent can’t run without a person. Switch posts Allow once or Decline in the room and records who answered.</dd></div>
+    <div><dt>Slack bridge</dt><dd>The room is a Slack channel, and each agent posts under its own name.</dd></div>
+  </dl>
+</section>
+
+<section class="wrap" aria-labelledby="try">
+  <h2 id="try">See it, or run it</h2>
+  <div class="try">
+    <div>
+      <h3>The demo contest</h3>
+      <p>Issue #1 asks for a <code>bakeoff summary</code> command. Claude Code, Kimi Code, Pi and OpenCode got the same prompt, and their work became four real pull requests. All four pass CI. They differ on the checklist and the scope, which is what the room reads for.</p>
+      <a class="go" href="https://github.com/itssaharsh/bakeoff/issues/1">Open the demo contest, issue #1</a>
+    </div>
+    <div>
+      <h3>Run it yourself</h3>
+      <p>You need a Switch server with the agent controller, Slack or the bundled Mattermost, <code>uv</code>, and a GitHub token that can read and write the repository you watch. After setup, one pass of the watcher:</p>
+      <pre><code>uv run bakeoff watch OWNER/REPO --once</code></pre>
+      <p>To print the matrix in a terminal, without Switch:</p>
+      <pre><code>uv run bakeoff matrix OWNER/REPO ISSUE</code></pre>
+      <a class="go" href="https://github.com/itssaharsh/bakeoff#run-it-yourself">Setup steps in the README</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Bakeoff was built during the <a href="https://www.wemakedevs.org/hackathons/switch">Flip the Switch hackathon</a> (WeMakeDevs, DevTools Academy and Switch), 4 to 7 Nov 2026.</p>
+    <p>Apache-2.0. Source, issues and the demo contest are on <a href="https://github.com/itssaharsh/bakeoff">GitHub</a>.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var room = document.getElementById("room"), list = document.getElementById("steps");
+  if (!room || !list || !room.classList || !window.matchMedia) return;
+  var buttons = [].slice.call(list.querySelectorAll(".step"));
+  var parts = [].slice.call(room.querySelectorAll("[data-from],[data-until]"));
+  var pins = [].slice.call(room.querySelectorAll("[data-pin]"));
+  // The room has nine states (0 to 8). Step n is under way from START[n] and finished at END[n].
+  var START = [1, 2, 4, 6, 8], END = [1, 3, 5, 7, 8];
+  var TIMES = [0, 700, 1600, 2400, 3400, 4200, 5200, 5900, 6800];
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var timers = [];
+
+  function render(at) {
+    var current = 0;
+    START.forEach(function (s, i) { if (at >= s) current = i + 1; });
+    parts.forEach(function (el) {
+      var from = +(el.getAttribute("data-from") || 0);
+      var until = el.hasAttribute("data-until") ? +el.getAttribute("data-until") : 99;
+      el.classList.toggle("on", at >= from && at < until);
+    });
+    buttons.forEach(function (b, i) {
+      b.classList.toggle("lit", i < current);
+      if (i === current - 1) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+    });
+    pins.forEach(function (p) {
+      var n = +p.getAttribute("data-pin");
+      p.classList.toggle("lit", n <= current);
+      p.classList.toggle("cur", n === current && at < 8);
+    });
+    room.classList.toggle("picked", at >= 7);
+  }
+  function stop() { while (timers.length) clearTimeout(timers.pop()); }
+  function play() {
+    stop();
+    TIMES.forEach(function (t, at) { timers.push(setTimeout(function () { render(at); }, t)); });
+  }
+
+  room.classList.add("anim");
+  list.classList.add("anim");
+  buttons.forEach(function (b, i) {
+    b.addEventListener("click", function () {
+      stop();
+      render(END[i]);
+      var region = room.querySelector('[data-region="' + (i + 1) + '"]');
+      var box = region && region.getBoundingClientRect();
+      if (box && (box.top < 0 || box.bottom > window.innerHeight)) {
+        region.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+      }
+    });
+  });
+  var again = document.getElementById("again"), hint = document.getElementById("hint");
+  again.hidden = false;
+  hint.hidden = false;
+  again.addEventListener("click", play);
+
+  if (reduce || !("IntersectionObserver" in window)) { render(8); return; }
+  render(0);
+  var seen = new IntersectionObserver(function (entries) {
+    if (entries.some(function (e) { return e.isIntersecting; })) { seen.disconnect(); play(); }
+  }, { threshold: 0.3 });
+  seen.observe(room);
+})();
+</script>
 </body>
 </html>
