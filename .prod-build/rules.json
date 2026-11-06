@@ -40,7 +40,11 @@
       "source": "https://www.wemakedevs.org/hackathons/switch",
       "dq": true,
       "kind": "attest",
-      "added": "2026-11-05T14:24:06Z"
+      "added": "2026-11-05T14:24:06Z",
+      "confirmed": {
+        "evidence": "https://youtu.be/8DTYAOaGWio: YouTube, unlisted (the rule allows public or unlisted), playable signed out (playabilityStatus OK, oEmbed 200), 178 s long (under 3 minutes)",
+        "at": "2026-11-06T11:06:17Z"
+      }
     },
     {
       "id": "video-teammates",
@@ -48,7 +52,11 @@
       "source": "https://www.wemakedevs.org/hackathons/switch",
       "dq": false,
       "kind": "attest",
-      "added": "2026-11-05T14:24:06Z"
+      "added": "2026-11-05T14:24:06Z",
+      "confirmed": {
+        "evidence": "final video about 1:12-1:28: Harsh Shah asks bakeoff-checker why #4 is not ready and gets the file:line answer, then his '@bakeoff-merge pick #4' is ignored; the whole flow is the Slack recording of the live room with a teammate typing",
+        "at": "2026-11-06T10:08:39Z"
+      }
     },
     {
       "id": "wispr-card",
@@ -56,7 +64,11 @@
       "source": "https://www.wemakedevs.org/hackathons/switch",
       "dq": false,
       "kind": "attest",
-      "added": "2026-11-05T14:24:06Z"
+      "added": "2026-11-05T14:24:06Z",
+      "confirmed": {
+        "evidence": "Wispr Flow share card exported 2026-11-06 09:55Z: C:\\Users\\ASUS\\Downloads\\flow-highlights-2026-11-06.png (2,591 words dictated, 183 wpm, 2-day streak, 8 apps); copy at demo/submit/wispr-usage-card.png; to upload in the form's Wispr field",
+        "at": "2026-11-06T09:56:23Z"
+      }
     },
     {
       "id": "ai-explain",

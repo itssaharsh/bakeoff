@@ -6,6 +6,7 @@ When several pull requests fix one issue, Bakeoff opens a Switch room for it: tw
 
 ## Demo
 
+- **Video (2:58):** https://youtu.be/8DTYAOaGWio — the live run in Slack with a teammate, the approval card, the merge and the refusal.
 - **Live landing page:** https://itssaharsh.github.io/bakeoff/ . Four agents designed it in a Bakeoff room (issue [#9](https://github.com/itssaharsh/bakeoff/issues/9), PRs #10-#13), friends weighed in on pictures of each design, the owner picked, and the merge deployed it to GitHub Pages.
 - **Blog (a first-time Switch user's guide to this setup):** https://dev.to/saharsh7002/i-ran-switch-headless-on-a-cloud-box-so-my-team-could-pick-one-pull-request-out-of-four-ho4
 - **The contests are public:** [issue #1](https://github.com/itssaharsh/bakeoff/issues/1) and [issue #9](https://github.com/itssaharsh/bakeoff/issues/9).

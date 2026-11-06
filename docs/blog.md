@@ -8,7 +8,7 @@ During the Flip the Switch hackathon, Switch's own repository grew to nearly 400
 
 So I built Bakeoff. When two or more PRs say `Closes #N`, it opens a Switch room for issue N. GitHub's checks fill a matrix. Two agents from different vendors read every diff against the issue's "Done when" list. A maintainer picks one, a person approves the merge on a card in the room, and every other PR gets a note naming the checklist item it missed.
 
-This post is the Switch part: what a first-time user needs, and the snags I hit.
+This post is the Switch part: what a first-time user needs, and the snags I hit. The 3-minute demo video of the live run is here: https://youtu.be/8DTYAOaGWio
 
 ![How a Bakeoff contest runs: GitHub PRs, the watcher and matrix, the Switch room with two readers, people, the merge agent and its approval card](https://raw.githubusercontent.com/itssaharsh/bakeoff/main/docs/architecture.png)
 
