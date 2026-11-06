@@ -87,8 +87,7 @@ Slack channel per contest (Switch room); GitHub PRs and comments; the bakeoff MC
 - 2:45-3:00 Personal coda: homepage candidates, friends' picks, live deploy (if S1 ships).
 
 ## 12. Event and judged path
-(This file is committed with the repository, so a judge may read it. Quote the event's own public pages, with
-the date each was read. Nothing about individual judges and no guesses about what they like.)
+(This file is public with the repository. It quotes the event's own public pages, with the date each was read.)
 - Window: start 2026-11-03T18:31:00Z (Wed 4 Nov 00:01 IST), freeze 2026-11-07T06:58Z (Sat 7 Nov 12:28 IST), end 2026-11-07T18:29:00Z (Sat 7 Nov 23:59 IST), from https://wemakedevs-server.onrender.com/hackathons/switch (event data, read 2026-11-04). Rule on earlier work (FAQ, https://www.wemakedevs.org/hackathons/switch): "Existing agents, libraries and templates are fine. The Switch setup and the workflow your agents run need to be built during the hackathon."
 - How an entry is judged: form description, then the demo video ("Keep it under 3 minutes"), then the repository README; live demo optional. Minutes per project and whether anyone runs the build: not published. Process: "Every submission is reviewed, and a shortlist is put together", then "Finalists are judged by a joint panel from DevTools Academy, Switch, and WeMakeDevs."
 - Criteria: see §8 (weights from the DevTools Academy event page, read 2026-11-04; the WeMakeDevs page shows the same four questions).
